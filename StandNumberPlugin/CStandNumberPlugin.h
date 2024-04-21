@@ -1,5 +1,6 @@
 #pragma once
 #include "EuroScopePlugIn.h"
+#include "RadarScreen.h"
 
 using namespace std;
 using namespace EuroScopePlugIn;
@@ -50,26 +51,16 @@ public:
 
 	bool OnCompileCommand(const char* command);
 
-	void OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
-		int ItemCode,
-		int TagData,
-		char sItemString[16],
-		int* pColorCode,
-		COLORREF* pRGB,
-		double* pFontSize);
-
 	void OnTimer(int Counter);
 
-	void OnRefreshFpListContent(CFlightPlanList AcList);
+	CRadarScreen* OnRadarScreenCreated(const char* sDisplayName, bool NeedRadarContent, bool GeoReferenced, bool CanBeSaved, bool CanBeCreated);
+	
+	void OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget, int ItemCode, int TagData, char sItemString[16], int* pColorCode, COLORREF* pRGB, double* pFontSize);
+
+protected:
+	void RegisterPlugin();
 
 private:
 	int ConnectionStatus;
-
-	bool IsFlightPlanProcessed(CFlightPlan& FlightPlan);
-	bool IsAcModeS(const CFlightPlan& FlightPlan) const;
-	bool IsApModeS(const string& icao) const;
-	bool IsEHS(const CFlightPlan& FlightPlan) const;
-	bool HasEquipment(const CFlightPlan& FlightPlan, bool acceptEquipmentFAA, bool acceptEquipmentICAO, string CodesICAO) const;
-
 };
 
