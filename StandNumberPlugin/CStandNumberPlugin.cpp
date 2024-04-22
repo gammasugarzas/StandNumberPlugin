@@ -7,6 +7,8 @@
 
 #define STN_NUM_GATES_STANDS	102
 
+map<int, bool> StandOccupation;
+
 GatesAndStands LHBPGatesAndStands_st[STN_NUM_GATES_STANDS] = {
 	{"221", "E019.15.21.420", "N047.26.02.040", 36.0},
 	{"222", "E019.15.23.292", "N047.26.03.480", 36.0},
@@ -179,7 +181,7 @@ void CStandNumberPlugin::OnTimer(int Counter)
 				}
 			}
 
-			if ((FP.GetFPTrackPosition().GetFlightLevel() < 700) && (strcmp("LHBP", FP.GetFlightPlanData().GetOrigin()) == 0))
+			if ((FP.GetFPTrackPosition().GetFlightLevel() < 700) && (strcmp("LHBP", FP.GetFlightPlanData().GetOrigin()) == 0) && (FP.GetFPTrackPosition().GetReportedGS() < 10))
 			{
 				if (strlen(FP.GetControllerAssignedData().GetScratchPadString()) == 0)
 				{
@@ -222,3 +224,4 @@ string CStandNumberPlugin::GetClosestStand(CPosition ACPos_f)
 	}
 	return Closest.Name;
 }
+
