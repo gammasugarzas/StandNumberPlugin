@@ -52,5 +52,6 @@ private:
 	int ConnectionStatus;
 	void LoadStandConfig(const std::string& filename);
 	void LoadAircraftConfig(const std::string& filename);
+	string GetGateStatus(void);
 };
 

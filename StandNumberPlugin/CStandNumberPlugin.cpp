@@ -7,19 +7,27 @@
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 #define STN_PLUGIN_NAME "STN Plugin"
-
-#define STN_NUM_ASSIGN_STAND_RANGE		25
-#define STN_NUM_DELETION_ALT_FEET		700
-#define STN_NUM_ADDITION_MAX_SPEED_KTS	5
-#define STN_NUM_MAX_DISTANCE_TO_GATE_M	55
-
 #define DISPLAY_WARNING(str) DisplayUserMessage(STN_PLUGIN_NAME, "Warning", str, true, true, true, true, false);
 #define DISPLAY_INFO(str) DisplayUserMessage(STN_PLUGIN_NAME, "Info", str, true, true, true, true, false);
+#define DISPLAY_DEBUG(str) DisplayUserMessage(STN_PLUGIN_NAME, "Debug", str, true, true, true, true, false);
 
-vector <AirlineStands> AvailableStands;
+vector<AirlineStands> AvailableStands;
 vector<GatesAndStands> LHBPGatesAndStands;
 vector<string> SchengenCountries;
 vector<Aircraft> Aircrafts;
+
+int STN_AssignRange = 25;
+int STN_DeleteAlt = 700;
+int STN_OccupiedMAxSpeed = 5;
+int STN_AcMaxDistanceToGate = 55;
+
+bool DebugPrint = false;
+
+inline static bool startsWith(const char* pre, const char* str)
+{
+	size_t lenpre = strlen(pre), lenstr = strlen(str);
+	return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
+};
 
 CStandNumberPlugin::CStandNumberPlugin()
 	: CPlugIn(COMPATIBILITY_CODE,
@@ -43,12 +51,6 @@ CStandNumberPlugin::CStandNumberPlugin()
 	LoadAircraftConfig("ICAO_Aircraft.json");
 }
 
-inline static bool startsWith(const char* pre, const char* str)
-{
-	size_t lenpre = strlen(pre), lenstr = strlen(str);
-	return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
-};
-
 CStandNumberPlugin::~CStandNumberPlugin()
 {
 }
@@ -58,9 +60,24 @@ bool CStandNumberPlugin::OnCompileCommand(const char* sCommandLine)
 	string commandString(sCommandLine);
 	cmatch matches;
 
-	if (startsWith(".help", sCommandLine))
+	if (startsWith(".stnver", sCommandLine))
 	{
-		DisplayUserMessage(STN_PLUGIN_NAME, "", "Stand number assigner and deletion plugin", true, true, true, true, false);
+		string ver = VERSION_FILE_STR;
+		string versioninfo{ "Version: " + ver + " loaded" };
+
+		DISPLAY_INFO(versioninfo.c_str());
+		return NULL;
+	}
+
+	if (startsWith(".stnstat", sCommandLine))
+	{
+		DISPLAY_DEBUG(GetGateStatus().c_str());
+		return NULL;
+	}
+
+	if (startsWith(".stndeb", sCommandLine))
+	{
+		DebugPrint = !DebugPrint;
 		return NULL;
 	}
 
@@ -71,100 +88,101 @@ void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 {
 	string Callsign = RadarTarget.GetCallsign();
 	CFlightPlan FP = FlightPlanSelect(RadarTarget.GetCallsign());
+	string Gate;
+	double WingSpan;
+	string AircraftType;
 
-	if (!FP.IsValid())
+	if (FP.IsValid() && !FP.GetSimulated())
 	{
-#ifdef _DEBUG
-		string DisplayMsg{ "Selected flightplan invalid" };
-		DisplayUserMessage(STN_PLUGIN_NAME, "Debug", DisplayMsg.c_str(), true, false, false, false, false);
-#endif
-	}
-	else
-	{
-		if (false == FP.GetSimulated())
+		/* if LHBP is the departure airport, but LHBP is not the dest airport, and the altitude is higher than STN_NUM_DELETION_ALT feet delete the schratchpad contents*/
+		if ((RadarTarget.GetPosition().GetPressureAltitude() >= STN_DeleteAlt) &&
+			(strcmp("LHBP", FP.GetFlightPlanData().GetDestination()) != 0) &&
+			(strcmp("LHBP", FP.GetFlightPlanData().GetOrigin()) == 0))
 		{
-			/* if LHBP is the departure airport, but LHBP is not the dest airport, and the altitude is higher than STN_NUM_DELETION_ALT feet delete the schratchpad contents*/
-			if ((RadarTarget.GetPosition().GetPressureAltitude() >= STN_NUM_DELETION_ALT_FEET) && (strcmp("LHBP", FP.GetFlightPlanData().GetDestination()) != 0) && (strcmp("LHBP", FP.GetFlightPlanData().GetOrigin()) == 0))
+			if (strlen(FP.GetControllerAssignedData().GetScratchPadString()) != 0)
 			{
-				if (strlen(FP.GetControllerAssignedData().GetScratchPadString()) != 0)
+				if (DebugPrint)
 				{
-#ifdef _DEBUG
 					string DisplayMsg{ Callsign + " gate number " + string {FP.GetControllerAssignedData().GetScratchPadString()} + " was deleted" };
-					DisplayUserMessage(STN_PLUGIN_NAME, "Debug", DisplayMsg.c_str(), true, false, false, false, false);
-#endif
-					FP.GetControllerAssignedData().SetScratchPadString("");
+					DISPLAY_DEBUG(DisplayMsg.c_str());
 				}
+				FP.GetControllerAssignedData().SetScratchPadString("");
 			}
-			/* if LHBP is the departure airport and the altitude is lower than 700 feet and the ground speed is smaller than STN_NUM_ADDITION_MAX_SPEED */
-			if ((RadarTarget.GetPosition().GetPressureAltitude() < STN_NUM_DELETION_ALT_FEET) && (strcmp("LHBP", FP.GetFlightPlanData().GetOrigin()) == 0) && (RadarTarget.GetPosition().GetReportedGS() < STN_NUM_ADDITION_MAX_SPEED_KTS))
+		}
+
+		/* if LHBP is the departure airport and the altitude is lower than 700 feet and the ground speed is smaller than STN_NUM_ADDITION_MAX_SPEED */
+		if ((RadarTarget.GetPosition().GetPressureAltitude() < STN_DeleteAlt) &&
+			(strcmp("LHBP", FP.GetFlightPlanData().GetOrigin()) == 0) && 
+			(RadarTarget.GetPosition().GetReportedGS() < STN_OccupiedMAxSpeed))
+		{
+			if (strlen(FP.GetControllerAssignedData().GetScratchPadString()) == 0)
 			{
-				if (strlen(FP.GetControllerAssignedData().GetScratchPadString()) == 0)
+				string ClosestStand = GetClosestStand(RadarTarget.GetPosition().GetPosition());
+
+				for (auto& gate : LHBPGatesAndStands)
 				{
-					string actualstand = GetClosestStand(RadarTarget.GetPosition().GetPosition());
-
-					for (auto& gate : LHBPGatesAndStands)
+					if (strcmp(gate.Number.c_str(), ClosestStand.c_str()) == 0)
 					{
-						if (strcmp(gate.Number.c_str(), actualstand.c_str()) == 0)
+						gate.Occupied = true;
+						gate.Callsign = Callsign;
+						
+						if (gate.Planned)
 						{
-							gate.Occupied = true;
-							gate.Callsign = Callsign;
-							gate.Planned = false;
-							gate.PlannedCallsign = "";
+							CFlightPlan PlannedforFP = FlightPlanSelect(gate.PlannedCallsign.c_str());
+							if (DebugPrint)
+							{
+								string DisplayMsg{ "Planned gate for " + gate.PlannedCallsign + " number " + gate.Number + " was deleted"};
+								DISPLAY_DEBUG(DisplayMsg.c_str());
+							}
+							PlannedforFP.GetControllerAssignedData().SetScratchPadString("");
+						}
 
-							bool success = FP.GetControllerAssignedData().SetScratchPadString(gate.Number.c_str());
-#ifdef _DEBUG
+						gate.Planned = false;
+						gate.PlannedCallsign = "";
+
+						bool success = FP.GetControllerAssignedData().SetScratchPadString(gate.Number.c_str());
+						if (DebugPrint)
+						{
 							string DisplayMsg{ Callsign + " gate number was set to " + gate.Number };
-							DisplayUserMessage(STN_PLUGIN_NAME, "Debug", DisplayMsg.c_str(), true, false, false, false, false);
-#endif
-							break;
+							DISPLAY_DEBUG(DisplayMsg.c_str());
 						}
+						break;
 					}
 				}
 			}
+		}
 
-			if ((strcmp("LHBP", FP.GetFlightPlanData().GetDestination()) == 0) && (FP.GetDistanceToDestination() < STN_NUM_ASSIGN_STAND_RANGE))
+		if ((strcmp("LHBP", FP.GetFlightPlanData().GetDestination()) == 0) && 
+			(FP.GetDistanceToDestination() < STN_AssignRange) &&
+			(RadarTarget.GetPosition().GetPressureAltitude() >= STN_DeleteAlt) &&
+			(strlen(FP.GetControllerAssignedData().GetScratchPadString()) == 0))
+		{
+			AircraftType = FP.GetFlightPlanData().GetAircraftFPType();
+
+			for (auto& ac : Aircrafts)
 			{
-				if (RadarTarget.GetPosition().GetPressureAltitude() >= STN_NUM_DELETION_ALT_FEET)
+				if (strcmp(ac.ICAO.c_str(), AircraftType.c_str()) == 0)
 				{
-					if (strlen(FP.GetControllerAssignedData().GetScratchPadString()) == 0)
-					{
-						double ws;
-						string actype = FP.GetFlightPlanData().GetAircraftFPType();
-						for (auto& ac : Aircrafts)
-						{
-							if (strcmp(ac.ICAO.c_str(), actype.c_str()) == 0)
-							{
-								ws = ac.Wingspan;
-							}
-						}
-						string Gate = GetStand(IsFromSchengen(FP.GetFlightPlanData().GetOrigin()), Callsign, ws);
-
-						bool success = FP.GetControllerAssignedData().SetScratchPadString(Gate.c_str());
-						if (success)
-						{
-							for (auto& gate : LHBPGatesAndStands)
-							{
-								if (strcmp(gate.Number.c_str(), Gate.c_str()) == 0)
-								{
-									gate.Planned = true;
-									gate.PlannedCallsign = Callsign;
-								}
-							}
-						}
-#ifdef _DEBUG
-						string DisplayMsg{ Callsign + " gate number suggestion is added " + Gate };
-						DisplayUserMessage(STN_PLUGIN_NAME, "Debug", DisplayMsg.c_str(), true, false, false, false, false);
-#endif
-					}
+					WingSpan = ac.Wingspan;
 				}
-				else
+			}
+
+			Gate = GetStand(IsFromSchengen(FP.GetFlightPlanData().GetOrigin()), Callsign, WingSpan);
+
+			bool success = FP.GetControllerAssignedData().SetScratchPadString(Gate.c_str());
+				
+			if (success)
+			{
+				for (auto& gate : LHBPGatesAndStands)
 				{
-					for (auto& gate : LHBPGatesAndStands)
+					if (strcmp(gate.Number.c_str(), Gate.c_str()) == 0)
 					{
-						if (strcmp(gate.PlannedCallsign.c_str(), Callsign.c_str()))
+						gate.Planned = true;
+						gate.PlannedCallsign = Callsign;
+						if (DebugPrint)
 						{
-							gate.Planned = false;
-							gate.PlannedCallsign = "";
+							string DisplayMsg{ Callsign + " gate number suggestion is added " + Gate };
+							DISPLAY_DEBUG(DisplayMsg.c_str());
 						}
 					}
 				}
@@ -176,7 +194,7 @@ void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 void CStandNumberPlugin::OnTimer(int Counter)
 {
 	/* convert meter to nm */
-	double MaxDist_nm = (STN_NUM_MAX_DISTANCE_TO_GATE_M * 0.539956803) / 1000.0;
+	double MaxDist_nm = (STN_AcMaxDistanceToGate * 0.539956803) / 1000.0;
 
 	for (auto& gate : LHBPGatesAndStands)
 	{
@@ -196,7 +214,6 @@ void CStandNumberPlugin::OnTimer(int Counter)
 
 					if (DistAcGate > MaxDist_nm)
 					{
-
 						gate.Occupied = false;
 						gate.Callsign = "";
 						break;
@@ -208,13 +225,14 @@ void CStandNumberPlugin::OnTimer(int Counter)
 				gate.Occupied = false;
 				gate.Callsign = "";
 			}
-#ifdef _DEBUG
 			if (!gate.Occupied)
 			{
-				string DisplayMsg{ "Gate " + gate.Number + " is set to free" };
-				DisplayUserMessage(STN_PLUGIN_NAME, "Debug", DisplayMsg.c_str(), true, false, false, false, false);
+				if (DebugPrint)
+				{
+					string DisplayMsg{ "Gate " + gate.Number + " is set to free" };
+					DISPLAY_DEBUG(DisplayMsg.c_str());
+				}
 			}
-#endif
 		}
 	}
 }
@@ -239,6 +257,26 @@ void CStandNumberPlugin::LoadStandConfig(const std::string& filename) {
 		DISPLAY_WARNING(message.c_str());
 		return;
 	}
+
+	assert(document.HasMember("stand_assignment_range"));
+	const Value& range = document["stand_assignment_range"]; // Using a reference for consecutive access is handy and faster.
+	assert(range.IsInt());
+	STN_AssignRange = range.GetInt();
+
+	assert(document.HasMember("stand_deletion_altitude"));
+	const Value& alt = document["stand_deletion_altitude"]; // Using a reference for consecutive access is handy and faster.
+	assert(alt.IsInt());
+	STN_DeleteAlt = alt.GetInt();
+
+	assert(document.HasMember("stand_ooccupied_max_speed"));
+	const Value& speed = document["stand_ooccupied_max_speed"]; // Using a reference for consecutive access is handy and faster.
+	assert(speed.IsInt());
+	STN_OccupiedMAxSpeed = speed.GetInt();
+
+	assert(document.HasMember("aircraft_max_distance_to_gate"));
+	const Value& maxdist = document["aircraft_max_distance_to_gate"]; // Using a reference for consecutive access is handy and faster.
+	assert(maxdist.IsInt());
+	STN_AcMaxDistanceToGate = maxdist.GetInt();
 
 	assert(document.HasMember("airlines"));
 	const Value& airlines = document["airlines"]; // Using a reference for consecutive access is handy and faster.
@@ -363,10 +401,13 @@ string CStandNumberPlugin::GetClosestStand(CPosition ACPos_f)
 		}
 		index++;
 	}
-#ifdef _DEBUG
-	string DisplayMsg = { "Closest distance " + to_string(Closest.Dist) };
-	DisplayUserMessage(STN_PLUGIN_NAME, "Debug", DisplayMsg.c_str(), true, false, false, false, false);
-#endif
+	
+	if (DebugPrint)
+	{
+		string DisplayMsg = { "Closest distance " + to_string(Closest.Dist) };
+		DISPLAY_DEBUG(DisplayMsg.c_str());
+	}
+
 	return Closest.Number;
 }
 
@@ -413,4 +454,24 @@ string CStandNumberPlugin::GetStand(bool IsFromSchengen, string Callsign, double
 	}
 	
 	return GateNum;
+}
+
+string CStandNumberPlugin::GetGateStatus(void)
+{
+	string status = "";
+	for (auto& gate : LHBPGatesAndStands)
+	{
+		if (gate.Occupied || gate.Planned)
+		{
+			status += gate.Number + " ";
+			status += (gate.Occupied) ? "X":"-";
+			status += (gate.Planned) ? "X" : "-";
+			if (gate.Occupied)
+				status += " " + gate.Callsign;
+			if (gate.Planned)
+				status += " " + gate.PlannedCallsign;
+			status += ", ";
+		}
+	}
+	return status;
 }
