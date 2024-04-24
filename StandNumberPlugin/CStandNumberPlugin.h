@@ -25,6 +25,12 @@ typedef struct AirlineStands
 	vector <string> PreferedStands;
 } AirlineStands;
 
+typedef struct Aircraft
+{
+	string ICAO;
+	double Wingspan;
+}Aircraft;
+
 class CStandNumberPlugin :
     public CPlugIn
 {
@@ -39,11 +45,12 @@ public:
 	string GetClosestStand(CPosition ACPos_f);
 	bool CheckStandOccupation(CPosition ACPos_f);
 	bool IsFromSchengen(string DepAirportICAO);
-	string GetStand(bool IsSchengen, string Callsign);
+	string GetStand(bool IsSchengen, string Callsign, double WingSpan);
 private:
 	std::string pluginDirectory;
 
 	int ConnectionStatus;
 	void LoadStandConfig(const std::string& filename);
+	void LoadAircraftConfig(const std::string& filename);
 };
 

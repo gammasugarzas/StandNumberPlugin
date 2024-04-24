@@ -8,7 +8,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 #define STN_PLUGIN_NAME "STN Plugin"
 
-#define STN_NUM_SCHENGEN_COUNTRIES		25
+#define STN_NUM_ASSIGN_STAND_RANGE		25
 #define STN_NUM_DELETION_ALT_FEET		700
 #define STN_NUM_ADDITION_MAX_SPEED_KTS	5
 #define STN_NUM_MAX_DISTANCE_TO_GATE_M	55
@@ -19,6 +19,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 vector <AirlineStands> AvailableStands;
 vector<GatesAndStands> LHBPGatesAndStands;
 vector<string> SchengenCountries;
+vector<Aircraft> Aircrafts;
 
 CStandNumberPlugin::CStandNumberPlugin()
 	: CPlugIn(COMPATIBILITY_CODE,
@@ -39,6 +40,7 @@ CStandNumberPlugin::CStandNumberPlugin()
 	std::string fullPluginPathStr(fullPluginPath);
 	pluginDirectory = fullPluginPathStr.substr(0, fullPluginPathStr.find_last_of("\\"));
 	LoadStandConfig("StandNumberPlugin-config.json");
+	LoadAircraftConfig("ICAO_Aircraft.json");
 }
 
 inline static bool startsWith(const char* pre, const char* str)
@@ -120,13 +122,22 @@ void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 				}
 			}
 
-			if (strcmp("LHBP", FP.GetFlightPlanData().GetDestination()) == 0)
+			if ((strcmp("LHBP", FP.GetFlightPlanData().GetDestination()) == 0) && (FP.GetDistanceToDestination() < STN_NUM_ASSIGN_STAND_RANGE))
 			{
 				if (RadarTarget.GetPosition().GetPressureAltitude() >= STN_NUM_DELETION_ALT_FEET)
 				{
 					if (strlen(FP.GetControllerAssignedData().GetScratchPadString()) == 0)
 					{
-						string Gate = GetStand(IsFromSchengen(FP.GetFlightPlanData().GetOrigin()), Callsign);
+						double ws;
+						string actype = FP.GetFlightPlanData().GetAircraftFPType();
+						for (auto& ac : Aircrafts)
+						{
+							if (strcmp(ac.ICAO.c_str(), actype.c_str()) == 0)
+							{
+								ws = ac.Wingspan;
+							}
+						}
+						string Gate = GetStand(IsFromSchengen(FP.GetFlightPlanData().GetOrigin()), Callsign, ws);
 
 						bool success = FP.GetControllerAssignedData().SetScratchPadString(Gate.c_str());
 						if (success)
@@ -287,6 +298,44 @@ void CStandNumberPlugin::LoadStandConfig(const std::string& filename) {
 	}
 }
 
+void CStandNumberPlugin::LoadAircraftConfig(const std::string& filename) {
+	std::ifstream file(pluginDirectory + "\\" + filename);
+	std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+	if (fileContent.empty()) {
+		DISPLAY_WARNING((filename + ": the JSON-file was not found or is empty").c_str());
+		return;
+	}
+
+	using namespace rapidjson;
+	Document document;
+	document.Parse(fileContent.c_str());
+
+	if (document.HasParseError()) {
+		ParseErrorCode code = document.GetParseError();
+		size_t offset = document.GetErrorOffset();
+		std::string message = filename + ": error while parsing JSON at position " + std::to_string(offset) + ": '" + fileContent.substr(offset, 10) + "'";
+		DISPLAY_WARNING(message.c_str());
+		return;
+	}
+
+	for (const auto& aircraft : document.GetArray())
+	{
+		Aircraft ac;
+
+		if (aircraft.HasMember("Wingspan"))
+		{
+			assert(aircraft["ICAO"].IsString());
+			ac.ICAO = aircraft["ICAO"].GetString();
+			assert(aircraft["Wingspan"].IsString());
+			ac.Wingspan = stod(aircraft["Wingspan"].GetString());
+
+			Aircrafts.push_back(ac);
+		}
+	}
+}
+
+
 string CStandNumberPlugin::GetClosestStand(CPosition ACPos_f)
 {
 	struct {
@@ -334,7 +383,7 @@ bool CStandNumberPlugin::IsFromSchengen(string DepAirportICAO)
 	return false;
 }
 
-string CStandNumberPlugin::GetStand(bool IsFromSchengen, string Callsign)
+string CStandNumberPlugin::GetStand(bool IsFromSchengen, string Callsign, double WingSpan)
 {
 	string GateNum = " NO";
 	string AirlineCode = Callsign.substr(0, 3);
@@ -352,7 +401,7 @@ string CStandNumberPlugin::GetStand(bool IsFromSchengen, string Callsign)
 				{
 					if (strcmp(gate.Number.c_str(), GateNum.c_str()) == 0)
 					{
-						if (!gate.Planned && !gate.Occupied)
+						if (!gate.Planned && !gate.Occupied && (WingSpan <= gate.Span))
 						{
 							break;
 						}
