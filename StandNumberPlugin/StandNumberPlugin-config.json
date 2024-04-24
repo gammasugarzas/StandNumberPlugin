@@ -1,0 +1,1055 @@
+{
+  "stand_assignment_range": 25,
+  "stand_deletion_altitude": 700,
+  "stand_ooccupied_max_speed": 5,
+  "aircraft_max_distance_to_gate":  55,
+  "airlines": [
+    {
+      "airlinecode": "AEE",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "AFR",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "AUA",
+      "stands": [ "042", "043", "044", "045", "210", "211", "212" ]
+    },
+    {
+      "airlinecode": "BEL",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "BTI",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "CSA",
+      "stands": [ "042", "043", "044", "045", "210", "211", "212" ]
+    },
+    {
+      "airlinecode": "DLH",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "EJU",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277" ]
+    },
+    {
+      "airlinecode": "EWG",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277" ]
+    },
+    {
+      "airlinecode": "EZY",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277" ]
+    },
+    {
+      "airlinecode": "EZS",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277" ]
+    },
+    {
+      "airlinecode": "FIN",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "IBE",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "ITY",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "KLM",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "LGL",
+      "stands": [ "210", "211", "212" ]
+    },
+    {
+      "airlinecode": "LGX",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277", "220", "221", "222", "223", "224", "225", "226", "227", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "LOT",
+      "stands": [ "042", "043", "044", "045", "210", "211", "212" ]
+    },
+    {
+      "airlinecode": "MAH",
+      "stands": [ "042", "043", "044", "045", "O31", "O32", "O33", "034", "035", "036", "037" ]
+    },
+    {
+      "airlinecode": "NOZ",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277", "225", "226", "227" ]
+    },
+    {
+      "airlinecode": "NSZ",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277", "224", "225", "226", "227" ]
+    },
+    {
+      "airlinecode": "PFF",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277", "220", "221", "222", "223", "224", "225", "226", "227", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "RYR",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277", "220", "221", "222", "223", "224", "225", "226", "227", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "SAS",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "SWR",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "TAP",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "TRA",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277" ]
+    },
+    {
+      "airlinecode": "TVL",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277", "O31", "O32", "O33", "034", "035", "036", "037" ]
+    },
+    {
+      "airlinecode": "VLG",
+      "stands": [ "042", "043", "044", "045" ]
+    },
+    {
+      "airlinecode": "WAT",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277", "220", "221", "222", "223", "224", "225", "226", "227", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "WZZ",
+      "stands": [ "270", "271", "272", "273", "274", "275", "276", "277", "220", "221", "222", "223", "224", "225", "226", "227", "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "AAL",
+      "stands": [ "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "AFL",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "AIZ",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039", "39L" ]
+    },
+    {
+      "airlinecode": "ASL",
+      "stands": [ "210", "211", "212" ]
+    },
+    {
+      "airlinecode": "BAW",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "BPS",
+      "stands": [ "210", "211", "212" ]
+    },
+    {
+      "airlinecode": "BRU",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "CAI",
+      "stands": [ "O31", "O32", "O33" ]
+    },
+    {
+      "airlinecode": "CCA",
+      "stands": [ "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "CSC",
+      "stands": [ "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "CSH",
+      "stands": [ "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "DAH",
+      "stands": [ "O31", "O32", "O33" ]
+    },
+    {
+      "airlinecode": "EIN",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "ELY",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039", "39L" ]
+    },
+    {
+      "airlinecode": "EXS",
+      "stands": [ "220", "221", "222", "223", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "EZY",
+      "stands": [ "220", "221", "222", "223", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "FDB",
+      "stands": [ "O31", "O32", "O33" ]
+    },
+    {
+      "airlinecode": "BBG",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "39L" ]
+    },
+    {
+      "airlinecode": "ISR",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039", "39L" ]
+    },
+    {
+      "airlinecode": "KAL",
+      "stands": [ "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "MSR",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "PGT",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "QTR",
+      "stands": [ "O32", "O33", "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "ROT",
+      "stands": [ "210", "211", "212" ]
+    },
+    {
+      "airlinecode": "ROU",
+      "stands": [ "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "SDR",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "SXD",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "SXS",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "THY",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
+      "airlinecode": "TVL",
+      "stands": [ "220", "221", "222", "223", "O31", "O32", "O33", "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "TVQ",
+      "stands": [ "220", "221", "222", "223", "O31", "O32", "O33", "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "TVS",
+      "stands": [ "220", "221", "222", "223", "O31", "O32", "O33", "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "TVI",
+      "stands": [ "O31", "O32", "O33" ]
+    },
+    {
+      "airlinecode": "UAE",
+      "stands": [ "034", "035", "036" ]
+    },
+    {
+      "airlinecode": "ATG",
+      "stands": [ " C1", " C2" ]
+    },
+    {
+      "airlinecode": "AZG",
+      "stands": [ " C1", " C2" ]
+    },
+    {
+      "airlinecode": "BCS",
+      "stands": [ "101", "102", "103", "104", "105", "106", "107", "108" ]
+    },
+    {
+      "airlinecode": "CLX",
+      "stands": [ " C1", " C2" ]
+    },
+    {
+      "airlinecode": "DHL",
+      "stands": [ "101", "102", "103", "104", "105", "106", "107", "108" ]
+    },
+    {
+      "airlinecode": "FDX",
+      "stands": [ "101", "102", "103", "104", "105", "106", "107", "108" ]
+    },
+    {
+      "airlinecode": "PFG",
+      "stands": [ "101", "102", "103", "104", "105", "106", "107", "108" ]
+    },
+    {
+      "airlinecode": "TAY",
+      "stands": [ "101", "102", "103", "104", "105", "106", "107", "108" ]
+    },
+    {
+      "airlinecode": "UPS",
+      "stands": [ "101", "102", "103", "104", "105", "106", "107", "108" ]
+    },
+    {
+      "airlinecode": "HAL",
+      "stands": [ "115", "117", " C1", " C2" ]
+    },
+    {
+      "airlinecode": "HUA",
+      "stands": [ "278", "279" ]
+    }
+  ],
+  "gates": [
+    {
+      "number": "221",
+      "loncoord": "E019.15.21.420",
+      "latcoord": "N047.26.02.040",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "222",
+      "loncoord": "E019.15.23.292",
+      "latcoord": "N047.26.03.480",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "223",
+      "loncoord": "E019.15.24.804",
+      "latcoord": "N047.26.04.560",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "224",
+      "loncoord": "E019.15.29.232",
+      "latcoord": "N047.26.07.872",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "225",
+      "loncoord": "E019.15.30.708",
+      "latcoord": "N047.26.08.988",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "226",
+      "loncoord": "E019.15.32.616",
+      "latcoord": "N047.26.10.428",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "211",
+      "loncoord": "E019.15.36.792",
+      "latcoord": "N047.26.07.908",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "044",
+      "loncoord": "E019.15.44.784",
+      "latcoord": "N047.26.04.164",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "271",
+      "loncoord": "E019.15.49.968",
+      "latcoord": "N047.26.08.268",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "272",
+      "loncoord": "E019.15.51.372",
+      "latcoord": "N047.26.07.188",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "273",
+      "loncoord": "E019.15.53.064",
+      "latcoord": "N047.26.06.360",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "274",
+      "loncoord": "E019.15.54.828",
+      "latcoord": "N047.26.05.028",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "275",
+      "loncoord": "E019.15.56.304",
+      "latcoord": "N047.26.04.020",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "276",
+      "loncoord": "E019.15.57.888",
+      "latcoord": "N047.26.03.084",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "278",
+      "loncoord": "E019.16.01.524",
+      "latcoord": "N047.26.00.708",
+      "wingspan": 43.0,
+      "schengen": true
+    },
+    {
+      "number": "279",
+      "loncoord": "E019.16.03.324",
+      "latcoord": "N047.25.59.376",
+      "wingspan": 50.0,
+      "schengen": true
+    },
+    {
+      "number": "270",
+      "loncoord": "E019.15.48.420",
+      "latcoord": "N047.26.09.204",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "277",
+      "loncoord": "E019.15.59.436",
+      "latcoord": "N047.26.02.148",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "210",
+      "loncoord": "E019.15.34.956",
+      "latcoord": "N047.26.06.396",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "212",
+      "loncoord": "E019.15.38.376",
+      "latcoord": "N047.26.08.952",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "220",
+      "loncoord": "E019.15.20.088",
+      "latcoord": "N047.26.00.852",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "227",
+      "loncoord": "E019.15.34.128",
+      "latcoord": "N047.26.11.508",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "042",
+      "loncoord": "E019.15.40.356",
+      "latcoord": "N047.26.02.940",
+      "wingspan": 38.0,
+      "schengen": true
+    },
+    {
+      "number": "043",
+      "loncoord": "E019.15.41.976",
+      "latcoord": "N047.26.03.840",
+      "wingspan": 51.0,
+      "schengen": true
+    },
+    {
+      "number": "045",
+      "loncoord": "E019.15.46.800",
+      "latcoord": "N047.26.03.192",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "LH1",
+      "loncoord": "E019.14.33.000",
+      "latcoord": "N047.25.47.388",
+      "wingspan": 34.09,
+      "schengen": true
+    },
+    {
+      "number": "LH2",
+      "loncoord": "E019.14.34.800",
+      "latcoord": "N047.25.46.560",
+      "wingspan": 34.09,
+      "schengen": true
+    },
+    {
+      "number": "LH3",
+      "loncoord": "E019.14.36.600",
+      "latcoord": "N047.25.45.552",
+      "wingspan": 34.09,
+      "schengen": true
+    },
+    {
+      "number": "AA1",
+      "loncoord": "E019.14.16.764",
+      "latcoord": "N047.25.52.572",
+      "wingspan": 34.09,
+      "schengen": true
+    },
+    {
+      "number": "AA2",
+      "loncoord": "E019.14.19.068",
+      "latcoord": "N047.25.51.816",
+      "wingspan": 34.09,
+      "schengen": true
+    },
+    {
+      "number": "AA3",
+      "loncoord": "E019.14.21.408",
+      "latcoord": "N047.25.51.060",
+      "wingspan": 34.09,
+      "schengen": true
+    },
+    {
+      "number": "AA4",
+      "loncoord": "E019.14.23.712",
+      "latcoord": "N047.25.50.304",
+      "wingspan": 34.09,
+      "schengen": true
+    },
+    {
+      "number": "130",
+      "loncoord": "E019.14.09.708",
+      "latcoord": "N047.25.54.948",
+      "wingspan": 23.8,
+      "schengen": true
+    },
+    {
+      "number": "131",
+      "loncoord": "E019.14.07.800",
+      "latcoord": "N047.25.53.400",
+      "wingspan": 19.98,
+      "schengen": true
+    },
+    {
+      "number": "132",
+      "loncoord": "E019.14.11.832",
+      "latcoord": "N047.25.54.228",
+      "wingspan": 23.8,
+      "schengen": true
+    },
+    {
+      "number": "133",
+      "loncoord": "E019.14.09.024",
+      "latcoord": "N047.25.53.256",
+      "wingspan": 19.98,
+      "schengen": true
+    },
+    {
+      "number": "134",
+      "loncoord": "E019.14.13.632",
+      "latcoord": "N047.25.53.436",
+      "wingspan": 23.8,
+      "schengen": true
+    },
+    {
+      "number": "135",
+      "loncoord": "E019.14.10.104",
+      "latcoord": "N047.25.52.896",
+      "wingspan": 19.98,
+      "schengen": true
+    },
+    {
+      "number": "137",
+      "loncoord": "E019.14.11.148",
+      "latcoord": "N047.25.52.536",
+      "wingspan": 19.98,
+      "schengen": true
+    },
+    {
+      "number": "139",
+      "loncoord": "E019.14.12.228",
+      "latcoord": "N047.25.52.212",
+      "wingspan": 19.98,
+      "schengen": true
+    },
+    {
+      "number": "141",
+      "loncoord": "E019.14.13.308",
+      "latcoord": "N047.25.51.816",
+      "wingspan": 19.98,
+      "schengen": true
+    },
+    {
+      "number": "C4R",
+      "loncoord": "E019.16.41.821",
+      "latcoord": "N047.25.33.148",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "0C4",
+      "loncoord": "E019.16.43.418",
+      "latcoord": "N047.25.33.453",
+      "wingspan": 68.59,
+      "schengen": false
+    },
+    {
+      "number": "C4L",
+      "loncoord": "E019.16.43.773",
+      "latcoord": "N047.25.36.148",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "C3R",
+      "loncoord": "E019.16.44.371",
+      "latcoord": "N047.25.35.515",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "0C3",
+      "loncoord": "E019.16.45.988",
+      "latcoord": "N047.25.35.260",
+      "wingspan": 68.59,
+      "schengen": false
+    },
+    {
+      "number": "C3L",
+      "loncoord": "E019.16.46.367",
+      "latcoord": "N047.25.36.277",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "O31",
+      "loncoord": "E019.15.36.072",
+      "latcoord": "N047.25.51.096",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "O32",
+      "loncoord": "E019.15.34.740",
+      "latcoord": "N047.25.52.284",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "O33",
+      "loncoord": "E019.15.33.048",
+      "latcoord": "N047.25.53.148",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "34R",
+      "loncoord": "E019.15.31.932",
+      "latcoord": "N047.25.54.444",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "034",
+      "loncoord": "E019.15.31.464",
+      "latcoord": "N047.25.54.840",
+      "wingspan": 65.0,
+      "schengen": false
+    },
+    {
+      "number": "34L",
+      "loncoord": "E019.15.29.700",
+      "latcoord": "N047.25.54.876",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "35R",
+      "loncoord": "E019.15.28.980",
+      "latcoord": "N047.25.56.388",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "035",
+      "loncoord": "E019.15.28.548",
+      "latcoord": "N047.25.56.712",
+      "wingspan": 65.0,
+      "schengen": false
+    },
+    {
+      "number": "35L",
+      "loncoord": "E019.15.26.784",
+      "latcoord": "N047.25.56.820",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "36R",
+      "loncoord": "E019.15.26.028",
+      "latcoord": "N047.25.58.368",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "036",
+      "loncoord": "E019.15.25.452",
+      "latcoord": "N047.25.58.584",
+      "wingspan": 65.0,
+      "schengen": false
+    },
+    {
+      "number": "36L",
+      "loncoord": "E019.15.23.940",
+      "latcoord": "N047.25.58.692",
+      "wingspan": 28.72,
+      "schengen": false
+    },
+    {
+      "number": "037",
+      "loncoord": "E019.15.28.584",
+      "latcoord": "N047.26.01.788",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "038",
+      "loncoord": "E019.15.30.204",
+      "latcoord": "N047.26.00.780",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "39R",
+      "loncoord": "E019.15.32.004",
+      "latcoord": "N047.25.59.736",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "039",
+      "loncoord": "E019.15.33.408",
+      "latcoord": "N047.25.58.836",
+      "wingspan": 65.0,
+      "schengen": false
+    },
+    {
+      "number": "39L",
+      "loncoord": "E019.15.33.768",
+      "latcoord": "N047.25.58.692",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "12A",
+      "loncoord": "E019.15.36.900",
+      "latcoord": "N047.26.07.872",
+      "wingspan": 47.57,
+      "schengen": true
+    },
+    {
+      "number": "C1R",
+      "loncoord": "E019.16.38.388",
+      "latcoord": "N047.25.42.528",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "0C1",
+      "loncoord": "E019.16.37.920",
+      "latcoord": "N047.25.42.204",
+      "wingspan": 68.59,
+      "schengen": false
+    },
+    {
+      "number": "C1L",
+      "loncoord": "E019.16.37.704",
+      "latcoord": "N047.25.41.052",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "C2R",
+      "loncoord": "E019.16.35.580",
+      "latcoord": "N047.25.40.440",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "0C2",
+      "loncoord": "E019.16.35.112",
+      "latcoord": "N047.25.40.152",
+      "wingspan": 68.59,
+      "schengen": false
+    },
+    {
+      "number": "C2L",
+      "loncoord": "E019.16.34.896",
+      "latcoord": "N047.25.38.964",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "101",
+      "loncoord": "E019.13.23.772",
+      "latcoord": "N047.26.38.760",
+      "wingspan": 48.0,
+      "schengen": true
+    },
+    {
+      "number": "102",
+      "loncoord": "E019.13.25.644",
+      "latcoord": "N047.26.36.168",
+      "wingspan": 48.0,
+      "schengen": true
+    },
+    {
+      "number": "103",
+      "loncoord": "E019.13.27.624",
+      "latcoord": "N047.26.33.576",
+      "wingspan": 48.0,
+      "schengen": true
+    },
+    {
+      "number": "105",
+      "loncoord": "E019.13.29.424",
+      "latcoord": "N047.26.31.056",
+      "wingspan": 48.0,
+      "schengen": true
+    },
+    {
+      "number": "104",
+      "loncoord": "E019.13.29.964",
+      "latcoord": "N047.26.30.912",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "106",
+      "loncoord": "E019.13.30.900",
+      "latcoord": "N047.26.29.616",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "108",
+      "loncoord": "E019.13.31.116",
+      "latcoord": "N047.26.28.680",
+      "wingspan": 48.0,
+      "schengen": true
+    },
+    {
+      "number": "107",
+      "loncoord": "E019.13.31.908",
+      "latcoord": "N047.26.28.248",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "150",
+      "loncoord": "E019.13.31.404",
+      "latcoord": "N047.26.26.484",
+      "wingspan": 30.4,
+      "schengen": true
+    },
+    {
+      "number": "151",
+      "loncoord": "E019.13.33.204",
+      "latcoord": "N047.26.25.980",
+      "wingspan": 30.4,
+      "schengen": true
+    },
+    {
+      "number": "152",
+      "loncoord": "E019.13.33.060",
+      "latcoord": "N047.26.25.080",
+      "wingspan": 30.4,
+      "schengen": true
+    },
+    {
+      "number": "153",
+      "loncoord": "E019.13.30.720",
+      "latcoord": "N047.26.25.044",
+      "wingspan": 28.65,
+      "schengen": true
+    },
+    {
+      "number": "154",
+      "loncoord": "E019.13.32.520",
+      "latcoord": "N047.26.22.200",
+      "wingspan": 28.65,
+      "schengen": true
+    },
+    {
+      "number": "155",
+      "loncoord": "E019.13.30.540",
+      "latcoord": "N047.26.22.200",
+      "wingspan": 28.65,
+      "schengen": true
+    },
+    {
+      "number": "160",
+      "loncoord": "E019.13.32.520",
+      "latcoord": "N047.26.20.580",
+      "wingspan": 19.5,
+      "schengen": true
+    },
+    {
+      "number": "161",
+      "loncoord": "E019.13.31.764",
+      "latcoord": "N047.26.20.112",
+      "wingspan": 19.5,
+      "schengen": true
+    },
+    {
+      "number": "162",
+      "loncoord": "E019.13.31.368",
+      "latcoord": "N047.26.19.500",
+      "wingspan": 19.5,
+      "schengen": true
+    },
+    {
+      "number": "170",
+      "loncoord": "E019.13.33.564",
+      "latcoord": "N047.26.19.104",
+      "wingspan": 23.9,
+      "schengen": true
+    },
+    {
+      "number": "171",
+      "loncoord": "E019.13.33.636",
+      "latcoord": "N047.26.17.484",
+      "wingspan": 23.9,
+      "schengen": true
+    },
+    {
+      "number": "172",
+      "loncoord": "E019.13.34.680",
+      "latcoord": "N047.26.15.936",
+      "wingspan": 23.9,
+      "schengen": true
+    },
+    {
+      "number": "110",
+      "loncoord": "E019.13.38.424",
+      "latcoord": "N047.26.22.128",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "111",
+      "loncoord": "E019.13.39.360",
+      "latcoord": "N047.26.21.804",
+      "wingspan": 52.0,
+      "schengen": true
+    },
+    {
+      "number": "112",
+      "loncoord": "E019.13.39.756",
+      "latcoord": "N047.26.21.084",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "113",
+      "loncoord": "E019.13.41.088",
+      "latcoord": "N047.26.20.328",
+      "wingspan": 52.0,
+      "schengen": true
+    },
+    {
+      "number": "114",
+      "loncoord": "E019.13.41.016",
+      "latcoord": "N047.26.20.000",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "115",
+      "loncoord": "E019.13.43.572",
+      "latcoord": "N047.26.18.528",
+      "wingspan": 68.59,
+      "schengen": true
+    },
+    {
+      "number": "116",
+      "loncoord": "E019.13.45.624",
+      "latcoord": "N047.26.16.188",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "117",
+      "loncoord": "E019.13.45.912",
+      "latcoord": "N047.26.16.404",
+      "wingspan": 68.59,
+      "schengen": true
+    },
+    {
+      "number": "17A",
+      "loncoord": "E019.13.45.804",
+      "latcoord": "N047.26.16.224",
+      "wingspan": 68.59,
+      "schengen": true
+    },
+    {
+      "number": "B5H",
+      "loncoord": "E019.15.24.912",
+      "latcoord": "N047.26.30.480",
+      "wingspan": 99.99,
+      "schengen": false
+    },
+    {
+      "number": "HEL",
+      "loncoord": "E019.13.57.792",
+      "latcoord": "N047.26.07.908",
+      "wingspan": 99.99,
+      "schengen": false
+    }
+  ],
+  "schengencountries": [
+    "LOxx",
+    "EBxx",
+    "LDxx",
+    "LKxx",
+    "EKxx",
+    "EExx",
+    "EFxx",
+    "LFxx",
+    "EDxx",
+    "LGxx",
+    "LHxx",
+    "LIxx",
+    "EVxx",
+    "EYxx",
+    "LMxx",
+    "EHxx",
+    "EPxx",
+    "LPxx",
+    "LZxx",
+    "LJxx",
+    "LExx",
+    "ESxx",
+    "BIxx",
+    "ENxx",
+    "LSxx"
+  ]
+}

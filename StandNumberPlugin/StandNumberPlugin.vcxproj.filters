@@ -52,10 +52,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Release\ICAO_Aircraft.json">
+    <None Include="ICAO_Aircraft.json">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="..\Release\StandNumberPlugin-config.json">
+    <None Include="StandNumberPlugin-config.json">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

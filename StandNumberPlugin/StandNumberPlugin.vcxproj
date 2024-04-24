@@ -168,8 +168,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Release\ICAO_Aircraft.json" />
-    <None Include="..\Release\StandNumberPlugin-config.json" />
+    <None Include="ICAO_Aircraft.json" />
+    <None Include="StandNumberPlugin-config.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
