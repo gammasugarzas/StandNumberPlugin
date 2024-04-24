@@ -153,7 +153,7 @@ void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 		}
 
 		if ((strcmp("LHBP", FP.GetFlightPlanData().GetDestination()) == 0) && 
-			(FP.GetDistanceToDestination() < STN_AssignRange) &&
+			(FP.GetDistanceToDestination() <= STN_AssignRange) &&
 			(RadarTarget.GetPosition().GetPressureAltitude() >= STN_DeleteAlt) &&
 			(strlen(FP.GetControllerAssignedData().GetScratchPadString()) == 0))
 		{
