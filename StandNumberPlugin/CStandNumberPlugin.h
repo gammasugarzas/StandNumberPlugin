@@ -43,10 +43,6 @@ public:
 	void OnRadarTargetPositionUpdate(CRadarTarget RadarTarget);
 	void OnTimer(int Counter);
 
-	string GetClosestStand(CPosition ACPos_f);
-	bool CheckStandOccupation(CPosition ACPos_f);
-	bool IsFromSchengen(string DepAirportICAO);
-	string GetStand(bool IsSchengen, string Callsign, double WingSpan);
 private:
 	std::string pluginDirectory;
 
@@ -54,5 +50,21 @@ private:
 	void LoadStandConfig(const std::string& filename);
 	void LoadAircraftConfig(const std::string& filename);
 	string GetGateStatus(void);
+	string GetClosestStand(CPosition ACPos_f);
+	bool CheckStandOccupation(CPosition ACPos_f);
+	bool IsFromSchengen(string DepAirportICAO);
+	string GetStand(bool IsSchengen, string Callsign, double WingSpan);
+	
+	bool IsRelevantFLightplan(CFlightPlan FP_f);
+	bool IsDepartingAircraftWithStand(CRadarTarget RT_f, CFlightPlan FP_f);
+	bool IsDepartingAircraftWithoutStand(CRadarTarget RT_f, CFlightPlan FP_f);
+	bool IsArrivingAircraftWithoutStand(CRadarTarget RT_f, CFlightPlan FP_f);
+	bool IsGateStillOccupiedByCallsign(string Callsign_f, CFlightPlan FP_f);
+	bool GetGateByCallsign(string CallSign_f, int& GateIdx);
+	bool GetGateByNumber(string GateNumber_f, int& GateIdx_f);
+	void FreeOccupiedGate(string Callsign_f);
+	void ReserveOccupiedGate(string Callsign_f, CRadarTarget RT_f, CFlightPlan FP_f);
+	void PlanGate(string Callsign_f, string GateName_f);
+	double GetWingspan(CFlightPlan FP_f);
 };
 

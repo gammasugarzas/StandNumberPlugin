@@ -15,7 +15,7 @@ vector<AirlineStands> AvailableStands;		// vector to store airline assigned stan
 vector<GatesAndStands> LHBPGatesAndStands;	// vector to store stands and gates loaded from json
 vector<string> SchengenCountries;			// vector to store Schengen countries loaded from json
 vector<Aircraft> Aircrafts;					// vector to store aircraft types loaded from json
-map<string, GatesAndStands> CallignGateMap;	// map to store callsign - gate assignment
+map<string, int> CallignGateMap;			// map to store callsign - gate assignment
 
 int STN_AssignRange = 25;					// stand assignment range loaded from json
 int STN_DeleteAlt = 700;					// stand assignment/deletion altitude loaded from json
@@ -90,16 +90,17 @@ void CStandNumberPlugin::OnRadarTargetDisconnect(CRadarTarget RadarTarget)
 	string Callsign = RadarTarget.GetCallsign();
 	if (CallignGateMap.find(Callsign) != CallignGateMap.end())
 	{
-		map<string, GatesAndStands>::iterator CallsignGatePair = CallignGateMap.find(Callsign);
-		if (CallsignGatePair->second.Occupied)
+		map<string, int>::iterator CallsignGatePair = CallignGateMap.find(Callsign);
+		GatesAndStands GateToEdit = LHBPGatesAndStands.at(CallsignGatePair->second);
+		if (GateToEdit.Occupied)
 		{
-			CallsignGatePair->second.Occupied = false;
-			CallsignGatePair->second.Callsign = "";
+			GateToEdit.Occupied = false;
+			GateToEdit.Callsign = "";
 			CallignGateMap.erase(Callsign);
 
 			if (DebugPrint)
 			{
-				string DisplayMsg{ "Gate " + CallsignGatePair->second.Number + " is set to free" };
+				string DisplayMsg{ "Gate " + GateToEdit.Number + " is set to free" };
 				DISPLAY_DEBUG(DisplayMsg.c_str());
 			}
 		}
@@ -108,149 +109,39 @@ void CStandNumberPlugin::OnRadarTargetDisconnect(CRadarTarget RadarTarget)
 
 void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 {
-	string Callsign = RadarTarget.GetCallsign();
-	CFlightPlan FP = FlightPlanSelect(RadarTarget.GetCallsign());
-	string Gate;
-	double WingSpan;
-	string AircraftType;
+	string CallSign = RadarTarget.GetCallsign();
+	CFlightPlan FLightPlan = FlightPlanSelect(RadarTarget.GetCallsign());
+	string GateName;
+	bool Success = false;
 
-	string id = FP.GetTrackingControllerId();
-	// Flightplan is valid, not simulated and tracked by me or not tracked by anybody else
-	if (FP.IsValid() &&
-		!FP.GetSimulated() &&
-		(FP.GetTrackingControllerIsMe() || id.empty()))
+
+	if (IsRelevantFLightplan(FLightPlan))
 	{
-		/* if LHBP is the departure airport, but LHBP is not the dest airport, and the altitude is higher than STN_NUM_DELETION_ALT feet delete the schratchpad contents*/
-		if ((RadarTarget.GetPosition().GetPressureAltitude() >= STN_DeleteAlt) &&
-			(strcmp("LHBP", FP.GetFlightPlanData().GetDestination()) != 0) &&
-			(strcmp("LHBP", FP.GetFlightPlanData().GetOrigin()) == 0))
+		if (IsDepartingAircraftWithStand(RadarTarget, FLightPlan))
 		{
-			if (strlen(FP.GetControllerAssignedData().GetScratchPadString()) != 0)
+			FLightPlan.GetControllerAssignedData().SetScratchPadString("");
+			FreeOccupiedGate(CallSign);
+		}
+
+		if (IsDepartingAircraftWithoutStand(RadarTarget, FLightPlan))
+		{
+			ReserveOccupiedGate(CallSign, RadarTarget, FLightPlan);
+		}
+
+		if (IsArrivingAircraftWithoutStand(RadarTarget, FLightPlan))
+		{
+			GateName = GetStand(IsFromSchengen(FLightPlan.GetFlightPlanData().GetOrigin()), CallSign, GetWingspan(FLightPlan));
+			Success = FLightPlan.GetControllerAssignedData().SetScratchPadString(GateName.c_str());
+
+			if (Success)
 			{
-				if (DebugPrint)
-				{
-					string DisplayMsg{ Callsign + " gate number " + string {FP.GetControllerAssignedData().GetScratchPadString()} + " was deleted" };
-					DISPLAY_DEBUG(DisplayMsg.c_str());
-				}
-				FP.GetControllerAssignedData().SetScratchPadString("");
+				PlanGate(CallSign, GateName);
 			}
 		}
 
-		/* if LHBP is the departure airport and the altitude is lower than 700 feet and the ground speed is smaller than STN_NUM_ADDITION_MAX_SPEED */
-		if ((RadarTarget.GetPosition().GetPressureAltitude() < STN_DeleteAlt) &&
-			(strcmp("LHBP", FP.GetFlightPlanData().GetOrigin()) == 0) && 
-			(RadarTarget.GetPosition().GetReportedGS() < STN_OccupiedMAxSpeed))
+		if (!IsGateStillOccupiedByCallsign(CallSign, FLightPlan))
 		{
-			if (strlen(FP.GetControllerAssignedData().GetScratchPadString()) == 0)
-			{
-				string ClosestStand = GetClosestStand(RadarTarget.GetPosition().GetPosition());
-
-				for (auto& gate : LHBPGatesAndStands)
-				{
-					if (strcmp(gate.Number.c_str(), ClosestStand.c_str()) == 0)
-					{
-						gate.Occupied = true;
-						gate.Callsign = Callsign;
-
-						CallignGateMap.insert(pair<string, GatesAndStands>(Callsign, gate));
-						
-						if (gate.Planned)
-						{
-							CFlightPlan PlannedforFP = FlightPlanSelect(gate.PlannedCallsign.c_str());
-							PlannedforFP.GetControllerAssignedData().SetScratchPadString("");
-							if (DebugPrint)
-							{
-								string DisplayMsg{ "Planned gate for " + gate.PlannedCallsign + " number " + gate.Number + " was deleted"};
-								DISPLAY_DEBUG(DisplayMsg.c_str());
-							}
-							CallignGateMap.erase(gate.PlannedCallsign);
-							gate.Planned = false;
-							gate.PlannedCallsign = "";
-						}
-
-						bool success = FP.GetControllerAssignedData().SetScratchPadString(gate.Number.c_str());
-						if (DebugPrint)
-						{
-							string DisplayMsg{ Callsign + " gate number was set to " + gate.Number };
-							DISPLAY_DEBUG(DisplayMsg.c_str());
-						}
-						break;
-					}
-				}
-			}
-		}
-
-		if ((strcmp("LHBP", FP.GetFlightPlanData().GetDestination()) == 0) && 
-			(FP.GetDistanceToDestination() <= STN_AssignRange) &&
-			(RadarTarget.GetPosition().GetPressureAltitude() >= STN_DeleteAlt) &&
-			(strlen(FP.GetControllerAssignedData().GetScratchPadString()) == 0))
-		{
-			AircraftType = FP.GetFlightPlanData().GetAircraftFPType();
-
-			for (auto& ac : Aircrafts)
-			{
-				if (strcmp(ac.ICAO.c_str(), AircraftType.c_str()) == 0)
-				{
-					WingSpan = ac.Wingspan;
-				}
-			}
-
-			Gate = GetStand(IsFromSchengen(FP.GetFlightPlanData().GetOrigin()), Callsign, WingSpan);
-
-			bool success = FP.GetControllerAssignedData().SetScratchPadString(Gate.c_str());
-				
-			if (success)
-			{
-				for (auto& gate : LHBPGatesAndStands)
-				{
-					if (strcmp(gate.Number.c_str(), Gate.c_str()) == 0)
-					{
-						gate.Planned = true;
-						gate.PlannedCallsign = Callsign;
-						CallignGateMap.insert(pair<string, GatesAndStands>(Callsign, gate));
-						if (DebugPrint)
-						{
-							string DisplayMsg{ Callsign + " gate number suggestion is added " + Gate };
-							DISPLAY_DEBUG(DisplayMsg.c_str());
-						}
-					}
-				}
-			}
-		}
-
-		/* convert meter to nm */
-		double MaxDist_nm = (STN_AcMaxDistanceToGate * 0.539956803) / 1000.0;
-
-		if (CallignGateMap.find(Callsign) != CallignGateMap.end())
-		{
-			map<string, GatesAndStands>::iterator CallsignGatePair = CallignGateMap.find(Callsign);
-			if (CallsignGatePair->second.Occupied)
-			{
-				CPosition standpos;
-				bool success = standpos.LoadFromStrings(CallsignGatePair->second.LongCoord.c_str(), CallsignGatePair->second.LAtCoord.c_str());
-
-
-				CPosition acpos = RadarTargetSelect(FP.GetCallsign()).GetPosition().GetPosition();
-				double DistAcGate = acpos.DistanceTo(standpos);
-
-				if (DistAcGate > MaxDist_nm)
-				{
-					CallsignGatePair->second.Occupied = false;
-					CallsignGatePair->second.Callsign = "";
-					CallignGateMap.erase(Callsign);
-				}
-				else
-				{
-					if (!CallsignGatePair->second.Occupied)
-					{
-						if (DebugPrint)
-						{
-							string DisplayMsg{ "Gate " + CallsignGatePair->second.Number + " is set to free" };
-							DISPLAY_DEBUG(DisplayMsg.c_str());
-						}
-					}
-				}
-			}
+			FreeOccupiedGate(CallSign);
 		}
 	}
 }
@@ -498,4 +389,191 @@ string CStandNumberPlugin::GetGateStatus(void)
 		}
 	}
 	return status;
+}
+
+
+bool CStandNumberPlugin::IsRelevantFLightplan(CFlightPlan FP_f)
+{
+	string CtrlId = FP_f.GetTrackingControllerId();
+
+	if (FP_f.IsValid() &&
+		!FP_f.GetSimulated() &&
+		(FP_f.GetTrackingControllerIsMe() || CtrlId.empty()))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool CStandNumberPlugin::IsDepartingAircraftWithStand(CRadarTarget RT_f, CFlightPlan FP_f)
+{
+	if ((RT_f.GetPosition().GetPressureAltitude() >= STN_DeleteAlt) &&
+		(strcmp("LHBP", FP_f.GetFlightPlanData().GetDestination()) != 0) &&
+		(strcmp("LHBP", FP_f.GetFlightPlanData().GetOrigin()) == 0) &&
+		(strlen(FP_f.GetControllerAssignedData().GetScratchPadString()) != 0))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool CStandNumberPlugin::IsDepartingAircraftWithoutStand(CRadarTarget RT_f, CFlightPlan FP_f)
+{
+	if ((RT_f.GetPosition().GetPressureAltitude() < STN_DeleteAlt) &&
+		(strcmp("LHBP", FP_f.GetFlightPlanData().GetOrigin()) == 0) &&
+		(RT_f.GetPosition().GetReportedGS() < STN_OccupiedMAxSpeed) &&
+		(strlen(FP_f.GetControllerAssignedData().GetScratchPadString()) == 0))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool CStandNumberPlugin::IsArrivingAircraftWithoutStand(CRadarTarget RT_f, CFlightPlan FP_f)
+{
+	if ((strcmp("LHBP", FP_f.GetFlightPlanData().GetDestination()) == 0) &&
+		(FP_f.GetDistanceToDestination() <= STN_AssignRange) &&
+		(RT_f.GetPosition().GetPressureAltitude() >= STN_DeleteAlt) &&
+		(strlen(FP_f.GetControllerAssignedData().GetScratchPadString()) == 0))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool CStandNumberPlugin::GetGateByCallsign(string CallSign_f, int &GateIdx_f)
+{
+	if (CallignGateMap.find(CallSign_f) != CallignGateMap.end())
+	{
+		map<string, int>::iterator CallsignGatePair = CallignGateMap.find(CallSign_f);
+		GateIdx_f = CallsignGatePair->second;
+		return true;
+	}
+
+	return false;
+}
+
+bool CStandNumberPlugin::GetGateByNumber(string GateNumber_f, int &GateIdx_f)
+{
+	GatesAndStands gate;
+	for (unsigned int idx = 0; idx < LHBPGatesAndStands.size(); idx++)
+	{
+		gate = LHBPGatesAndStands.at(idx);
+
+		if (strcmp(gate.Number.c_str(), GateNumber_f.c_str()) == 0)
+		{
+			GateIdx_f = idx;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void CStandNumberPlugin::FreeOccupiedGate(string Callsign_f)
+{
+	int GateIdx = 0;
+	if (GetGateByCallsign(Callsign_f, GateIdx))
+	{
+		if (LHBPGatesAndStands.at(GateIdx).Occupied)
+		{
+			LHBPGatesAndStands.at(GateIdx).Occupied = false;
+			LHBPGatesAndStands.at(GateIdx).Callsign = "";
+			CallignGateMap.erase(Callsign_f);
+		}
+	}
+}
+
+void CStandNumberPlugin::ReserveOccupiedGate(string Callsign_f, CRadarTarget RT_f, CFlightPlan FP_f)
+{
+	int GateIdx = 0;
+
+	string ClosestGateStandName = CStandNumberPlugin::GetClosestStand(RT_f.GetPosition().GetPosition());
+
+	if (GetGateByNumber(ClosestGateStandName, GateIdx))
+	{
+		LHBPGatesAndStands.at(GateIdx).Occupied = true;;
+		LHBPGatesAndStands.at(GateIdx).Callsign = Callsign_f;
+		CallignGateMap.insert(pair<string, int>(Callsign_f, GateIdx));
+		FP_f.GetControllerAssignedData().SetScratchPadString(LHBPGatesAndStands.at(GateIdx).Number.c_str());
+
+		if (LHBPGatesAndStands.at(GateIdx).Planned)
+		{
+			CFlightPlan PlannedforFP = FlightPlanSelect(LHBPGatesAndStands.at(GateIdx).PlannedCallsign.c_str());
+
+			if (IsRelevantFLightplan(PlannedforFP))
+			{
+				PlannedforFP.GetControllerAssignedData().SetScratchPadString("");
+				CallignGateMap.erase(LHBPGatesAndStands.at(GateIdx).PlannedCallsign);
+			}
+
+			LHBPGatesAndStands.at(GateIdx).Planned = false;
+			LHBPGatesAndStands.at(GateIdx).PlannedCallsign = "";
+		}
+	}
+}
+
+void CStandNumberPlugin::PlanGate(string Callsign_f, string GateName_f)
+{
+	bool Success = false;
+	GatesAndStands GateToEdit;
+	int GateIdx = 0;
+
+	Success = GetGateByNumber(GateName_f, GateIdx);
+	if (Success)
+	{
+		LHBPGatesAndStands.at(GateIdx).Planned = true;
+		LHBPGatesAndStands.at(GateIdx).PlannedCallsign = Callsign_f;
+		CallignGateMap.insert(pair<string, int>(Callsign_f, GateIdx));
+	}
+}
+
+bool CStandNumberPlugin::IsGateStillOccupiedByCallsign(string Callsign_f, CFlightPlan FP_f)
+{
+	/* convert meter to nm */
+	double MaxDist_nm = (STN_AcMaxDistanceToGate * 0.539956803) / 1000.0;
+	double DistAcGate;
+
+	if (CallignGateMap.find(Callsign_f) != CallignGateMap.end())
+	{
+		map<string, int>::iterator CallsignGatePair = CallignGateMap.find(Callsign_f);
+		GatesAndStands GateToEdit = LHBPGatesAndStands.at(CallsignGatePair->second);
+
+		if (GateToEdit.Occupied)
+		{
+			CPosition standpos;
+			standpos.LoadFromStrings(GateToEdit.LongCoord.c_str(), GateToEdit.LAtCoord.c_str());
+
+			CPosition acpos = RadarTargetSelect(FP_f.GetCallsign()).GetPosition().GetPosition();
+
+			DistAcGate = acpos.DistanceTo(standpos);
+
+			if (DistAcGate <= MaxDist_nm)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;;
+}
+
+double CStandNumberPlugin::GetWingspan(CFlightPlan FP_f)
+{
+	double WingSpan = 999.0;
+	string AircraftType = FP_f.GetFlightPlanData().GetAircraftFPType();
+
+	for (auto& ac : Aircrafts)
+	{
+		if (strcmp(ac.ICAO.c_str(), AircraftType.c_str()) == 0)
+		{
+			WingSpan = ac.Wingspan;
+		}
+	}
+
+	return WingSpan;
 }
