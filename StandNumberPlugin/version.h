@@ -8,8 +8,8 @@ constexpr auto PLUGIN_AUTHOR = "Tamas Bohus";
 constexpr auto PLUGIN_COPYRIGHT = "GPL v3";
 constexpr auto GITHUB_LINK = "https://github.com/gammasugarzas/StandNumberPlugin";
 #ifdef _DEBUG
-#define VERSION_FILE_STR		"1.0.2 DEV"
+#define VERSION_FILE_STR		"1.0.3 DEV"
 #else
-#define VERSION_FILE_STR		"1.0.2"
+#define VERSION_FILE_STR		"1.0.3"
 #endif
 #endif // !COPYRIGHTS

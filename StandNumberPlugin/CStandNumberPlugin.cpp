@@ -11,17 +11,18 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define DISPLAY_INFO(str) DisplayUserMessage(STN_PLUGIN_NAME, "Info", str, true, true, true, true, false);
 #define DISPLAY_DEBUG(str) DisplayUserMessage(STN_PLUGIN_NAME, "Debug", str, true, true, true, true, false);
 
-vector<AirlineStands> AvailableStands;
-vector<GatesAndStands> LHBPGatesAndStands;
-vector<string> SchengenCountries;
-vector<Aircraft> Aircrafts;
+vector<AirlineStands> AvailableStands;		// vector to store airline assigned stands loaded from json
+vector<GatesAndStands> LHBPGatesAndStands;	// vector to store stands and gates loaded from json
+vector<string> SchengenCountries;			// vector to store Schengen countries loaded from json
+vector<Aircraft> Aircrafts;					// vector to store aircraft types loaded from json
+map<string, GatesAndStands> CallignGateMap;	// map to store callsign - gate assignment
 
-int STN_AssignRange = 25;
-int STN_DeleteAlt = 700;
-int STN_OccupiedMAxSpeed = 5;
-int STN_AcMaxDistanceToGate = 55;
+int STN_AssignRange = 25;					// stand assignment range loaded from json
+int STN_DeleteAlt = 700;					// stand assignment/deletion altitude loaded from json
+int STN_OccupiedMAxSpeed = 5;				// stand occupation maximum speed in kts loaded from json
+int STN_AcMaxDistanceToGate = 55;			// stand occupation max distance from the gate loaded from json
 
-bool DebugPrint = false;
+bool DebugPrint = false;					// enable debug printf flag
 
 inline static bool startsWith(const char* pre, const char* str)
 {
@@ -84,6 +85,27 @@ bool CStandNumberPlugin::OnCompileCommand(const char* sCommandLine)
 	return false;
 }
 
+void CStandNumberPlugin::OnRadarTargetDisconnect(CRadarTarget RadarTarget)
+{
+	string Callsign = RadarTarget.GetCallsign();
+	if (CallignGateMap.find(Callsign) != CallignGateMap.end())
+	{
+		map<string, GatesAndStands>::iterator CallsignGatePair = CallignGateMap.find(Callsign);
+		if (CallsignGatePair->second.Occupied)
+		{
+			CallsignGatePair->second.Occupied = false;
+			CallsignGatePair->second.Callsign = "";
+			CallignGateMap.erase(Callsign);
+
+			if (DebugPrint)
+			{
+				string DisplayMsg{ "Gate " + CallsignGatePair->second.Number + " is set to free" };
+				DISPLAY_DEBUG(DisplayMsg.c_str());
+			}
+		}
+	}
+}
+
 void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 {
 	string Callsign = RadarTarget.GetCallsign();
@@ -92,7 +114,11 @@ void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 	double WingSpan;
 	string AircraftType;
 
-	if (FP.IsValid() && !FP.GetSimulated())
+	string id = FP.GetTrackingControllerId();
+	// Flightplan is valid, not simulated and tracked by me or not tracked by anybody else
+	if (FP.IsValid() &&
+		!FP.GetSimulated() &&
+		(FP.GetTrackingControllerIsMe() || id.empty()))
 	{
 		/* if LHBP is the departure airport, but LHBP is not the dest airport, and the altitude is higher than STN_NUM_DELETION_ALT feet delete the schratchpad contents*/
 		if ((RadarTarget.GetPosition().GetPressureAltitude() >= STN_DeleteAlt) &&
@@ -125,20 +151,22 @@ void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 					{
 						gate.Occupied = true;
 						gate.Callsign = Callsign;
+
+						CallignGateMap.insert(pair<string, GatesAndStands>(Callsign, gate));
 						
 						if (gate.Planned)
 						{
 							CFlightPlan PlannedforFP = FlightPlanSelect(gate.PlannedCallsign.c_str());
+							PlannedforFP.GetControllerAssignedData().SetScratchPadString("");
 							if (DebugPrint)
 							{
 								string DisplayMsg{ "Planned gate for " + gate.PlannedCallsign + " number " + gate.Number + " was deleted"};
 								DISPLAY_DEBUG(DisplayMsg.c_str());
 							}
-							PlannedforFP.GetControllerAssignedData().SetScratchPadString("");
+							CallignGateMap.erase(gate.PlannedCallsign);
+							gate.Planned = false;
+							gate.PlannedCallsign = "";
 						}
-
-						gate.Planned = false;
-						gate.PlannedCallsign = "";
 
 						bool success = FP.GetControllerAssignedData().SetScratchPadString(gate.Number.c_str());
 						if (DebugPrint)
@@ -179,9 +207,45 @@ void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 					{
 						gate.Planned = true;
 						gate.PlannedCallsign = Callsign;
+						CallignGateMap.insert(pair<string, GatesAndStands>(Callsign, gate));
 						if (DebugPrint)
 						{
 							string DisplayMsg{ Callsign + " gate number suggestion is added " + Gate };
+							DISPLAY_DEBUG(DisplayMsg.c_str());
+						}
+					}
+				}
+			}
+		}
+
+		/* convert meter to nm */
+		double MaxDist_nm = (STN_AcMaxDistanceToGate * 0.539956803) / 1000.0;
+
+		if (CallignGateMap.find(Callsign) != CallignGateMap.end())
+		{
+			map<string, GatesAndStands>::iterator CallsignGatePair = CallignGateMap.find(Callsign);
+			if (CallsignGatePair->second.Occupied)
+			{
+				CPosition standpos;
+				bool success = standpos.LoadFromStrings(CallsignGatePair->second.LongCoord.c_str(), CallsignGatePair->second.LAtCoord.c_str());
+
+
+				CPosition acpos = RadarTargetSelect(FP.GetCallsign()).GetPosition().GetPosition();
+				double DistAcGate = acpos.DistanceTo(standpos);
+
+				if (DistAcGate > MaxDist_nm)
+				{
+					CallsignGatePair->second.Occupied = false;
+					CallsignGatePair->second.Callsign = "";
+					CallignGateMap.erase(Callsign);
+				}
+				else
+				{
+					if (!CallsignGatePair->second.Occupied)
+					{
+						if (DebugPrint)
+						{
+							string DisplayMsg{ "Gate " + CallsignGatePair->second.Number + " is set to free" };
 							DISPLAY_DEBUG(DisplayMsg.c_str());
 						}
 					}
@@ -193,48 +257,7 @@ void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 
 void CStandNumberPlugin::OnTimer(int Counter)
 {
-	/* convert meter to nm */
-	double MaxDist_nm = (STN_AcMaxDistanceToGate * 0.539956803) / 1000.0;
 
-	for (auto& gate : LHBPGatesAndStands)
-	{
-		if (gate.Occupied)
-		{
-			bool fpfound = false;
-			CPosition standpos;
-			bool success = standpos.LoadFromStrings(gate.LongCoord.c_str(), gate.LAtCoord.c_str());
-
-			for (CFlightPlan FP = FlightPlanSelectFirst(); FP.IsValid(); FP = FlightPlanSelectNext(FP))
-			{
-				if (false == FP.GetSimulated() && (strcmp(gate.Callsign.c_str(), FP.GetCallsign()) == 0))
-				{
-					fpfound = true;
-					CPosition acpos = RadarTargetSelect(FP.GetCallsign()).GetPosition().GetPosition();
-					double DistAcGate = acpos.DistanceTo(standpos);
-
-					if (DistAcGate > MaxDist_nm)
-					{
-						gate.Occupied = false;
-						gate.Callsign = "";
-						break;
-					}
-				}
-			}
-			if (!fpfound)
-			{
-				gate.Occupied = false;
-				gate.Callsign = "";
-			}
-			if (!gate.Occupied)
-			{
-				if (DebugPrint)
-				{
-					string DisplayMsg{ "Gate " + gate.Number + " is set to free" };
-					DISPLAY_DEBUG(DisplayMsg.c_str());
-				}
-			}
-		}
-	}
 }
 
 void CStandNumberPlugin::LoadStandConfig(const std::string& filename) {
@@ -444,16 +467,17 @@ string CStandNumberPlugin::GetStand(bool IsFromSchengen, string Callsign, double
 					{
 						if (!gate.Planned && !gate.Occupied && (WingSpan <= gate.Span))
 						{
-							break;
+							return GateNum;
 						}
 					}
 				}
+				string GateNum = " NO";
 				MaxRetries--;
 			}
 		}
 	}
 	
-	return GateNum;
+	return " NO";
 }
 
 string CStandNumberPlugin::GetGateStatus(void)
