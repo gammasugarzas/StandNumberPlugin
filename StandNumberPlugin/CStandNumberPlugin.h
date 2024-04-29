@@ -19,6 +19,15 @@ typedef struct GatesAndStands
 	string Callsign;
 } GatesAndStands;
 
+typedef struct GateOccupiedListItem
+{
+	string Number;
+	string Occupied;
+	string Callsign;
+	string Planned;
+	string PlannedCallsign;
+} GateOccupiedListItem;
+
 typedef struct AirlineStands
 {
 	string AirlineCode;
@@ -42,6 +51,12 @@ public:
 	void OnFlightPlanDisconnect(CFlightPlan FlightPlan);
 	void OnRadarTargetPositionUpdate(CRadarTarget RadarTarget);
 	void OnTimer(int Counter);
+	void OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget, int ItemCode,
+		int TagData, char sItemString[16], int* pColorCode, COLORREF* pRGB, double* pFontSize);
+
+protected:
+	CFlightPlanList  m_GateList;
+	vector< GateOccupiedListItem> GateOccupiedListData;
 
 private:
 	std::string pluginDirectory;
