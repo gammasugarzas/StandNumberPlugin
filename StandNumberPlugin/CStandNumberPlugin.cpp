@@ -15,7 +15,7 @@ vector<AirlineStands> AvailableStands;		// vector to store airline assigned stan
 vector<GatesAndStands> LHBPGatesAndStands;	// vector to store stands and gates loaded from json
 vector<string> SchengenCountries;			// vector to store Schengen countries loaded from json
 vector<Aircraft> Aircrafts;					// vector to store aircraft types loaded from json
-map<string, int> CallignGateMap;			// map to store callsign - gate assignment
+map<string, int> CallsignGateMap;			// map to store callsign - gate assignment
 
 int STN_AssignRange = 25;					// stand assignment range loaded from json
 int STN_DeleteAlt = 700;					// stand assignment/deletion altitude loaded from json
@@ -85,24 +85,18 @@ bool CStandNumberPlugin::OnCompileCommand(const char* sCommandLine)
 	return false;
 }
 
-void CStandNumberPlugin::OnRadarTargetDisconnect(CRadarTarget RadarTarget)
+void CStandNumberPlugin::OnFlightPlanDisconnect(CFlightPlan FlightPlan)
 {
-	string Callsign = RadarTarget.GetCallsign();
-	if (CallignGateMap.find(Callsign) != CallignGateMap.end())
+	string Callsign = FlightPlan.GetCallsign();
+	if (CallsignGateMap.find(Callsign) != CallsignGateMap.end())
 	{
-		map<string, int>::iterator CallsignGatePair = CallignGateMap.find(Callsign);
+		map<string, int>::iterator CallsignGatePair = CallsignGateMap.find(Callsign);
 		GatesAndStands GateToEdit = LHBPGatesAndStands.at(CallsignGatePair->second);
 		if (GateToEdit.Occupied)
 		{
 			GateToEdit.Occupied = false;
 			GateToEdit.Callsign = "";
-			CallignGateMap.erase(Callsign);
-
-			if (DebugPrint)
-			{
-				string DisplayMsg{ "Gate " + GateToEdit.Number + " is set to free" };
-				DISPLAY_DEBUG(DisplayMsg.c_str());
-			}
+			CallsignGateMap.erase(Callsign);
 		}
 	}
 }
@@ -447,9 +441,9 @@ bool CStandNumberPlugin::IsArrivingAircraftWithoutStand(CRadarTarget RT_f, CFlig
 
 bool CStandNumberPlugin::GetGateByCallsign(string CallSign_f, int &GateIdx_f)
 {
-	if (CallignGateMap.find(CallSign_f) != CallignGateMap.end())
+	if (CallsignGateMap.find(CallSign_f) != CallsignGateMap.end())
 	{
-		map<string, int>::iterator CallsignGatePair = CallignGateMap.find(CallSign_f);
+		map<string, int>::iterator CallsignGatePair = CallsignGateMap.find(CallSign_f);
 		GateIdx_f = CallsignGatePair->second;
 		return true;
 	}
@@ -483,7 +477,7 @@ void CStandNumberPlugin::FreeOccupiedGate(string Callsign_f)
 		{
 			LHBPGatesAndStands.at(GateIdx).Occupied = false;
 			LHBPGatesAndStands.at(GateIdx).Callsign = "";
-			CallignGateMap.erase(Callsign_f);
+			CallsignGateMap.erase(Callsign_f);
 		}
 	}
 }
@@ -498,7 +492,7 @@ void CStandNumberPlugin::ReserveOccupiedGate(string Callsign_f, CRadarTarget RT_
 	{
 		LHBPGatesAndStands.at(GateIdx).Occupied = true;;
 		LHBPGatesAndStands.at(GateIdx).Callsign = Callsign_f;
-		CallignGateMap.insert(pair<string, int>(Callsign_f, GateIdx));
+		CallsignGateMap.insert(pair<string, int>(Callsign_f, GateIdx));
 		FP_f.GetControllerAssignedData().SetScratchPadString(LHBPGatesAndStands.at(GateIdx).Number.c_str());
 
 		if (LHBPGatesAndStands.at(GateIdx).Planned)
@@ -508,7 +502,7 @@ void CStandNumberPlugin::ReserveOccupiedGate(string Callsign_f, CRadarTarget RT_
 			if (IsRelevantFLightplan(PlannedforFP))
 			{
 				PlannedforFP.GetControllerAssignedData().SetScratchPadString("");
-				CallignGateMap.erase(LHBPGatesAndStands.at(GateIdx).PlannedCallsign);
+				CallsignGateMap.erase(LHBPGatesAndStands.at(GateIdx).PlannedCallsign);
 			}
 
 			LHBPGatesAndStands.at(GateIdx).Planned = false;
@@ -528,7 +522,7 @@ void CStandNumberPlugin::PlanGate(string Callsign_f, string GateName_f)
 	{
 		LHBPGatesAndStands.at(GateIdx).Planned = true;
 		LHBPGatesAndStands.at(GateIdx).PlannedCallsign = Callsign_f;
-		CallignGateMap.insert(pair<string, int>(Callsign_f, GateIdx));
+		CallsignGateMap.insert(pair<string, int>(Callsign_f, GateIdx));
 	}
 }
 
@@ -538,9 +532,9 @@ bool CStandNumberPlugin::IsGateStillOccupiedByCallsign(string Callsign_f, CFligh
 	double MaxDist_nm = (STN_AcMaxDistanceToGate * 0.539956803) / 1000.0;
 	double DistAcGate;
 
-	if (CallignGateMap.find(Callsign_f) != CallignGateMap.end())
+	if (CallsignGateMap.find(Callsign_f) != CallsignGateMap.end())
 	{
-		map<string, int>::iterator CallsignGatePair = CallignGateMap.find(Callsign_f);
+		map<string, int>::iterator CallsignGatePair = CallsignGateMap.find(Callsign_f);
 		GatesAndStands GateToEdit = LHBPGatesAndStands.at(CallsignGatePair->second);
 
 		if (GateToEdit.Occupied)

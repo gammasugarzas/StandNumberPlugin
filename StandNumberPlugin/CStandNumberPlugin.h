@@ -39,7 +39,7 @@ public:
     virtual ~CStandNumberPlugin(void);
 
 	bool OnCompileCommand(const char* command);
-	void OnRadarTargetDisconnect(CRadarTarget RadarTarget);
+	void OnFlightPlanDisconnect(CFlightPlan FlightPlan);
 	void OnRadarTargetPositionUpdate(CRadarTarget RadarTarget);
 	void OnTimer(int Counter);
 
