@@ -53,7 +53,7 @@ private:
 	std::string pluginDirectory;
 
 	int ConnectionStatus;
-	void LoadStandConfig(const std::string& filename);
+	void LoadStandConfig(void);
 	void LoadAircraftConfig(const std::string& filename);
 	string GetGateStatus(void);
 	string GetClosestStand(CPosition ACPos_f);
