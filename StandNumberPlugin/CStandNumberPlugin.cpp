@@ -1,8 +1,14 @@
 #include "pch.h"
 #include "CStandNumberPlugin.h"
 #include <string>
+#include <string_view>
 #include "version.h"
 #include <winnt.h>
+#include "curlcpp/curl_easy.h"
+#include "curlcpp/curl_form.h"
+#include "curlcpp/curl_ios.h"
+#include "curlcpp/curl_exception.h"
+#include "rapidjson/istreamwrapper.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -33,12 +39,36 @@ const int TAG_ITEM_GATE_PLANNED_CS = 305;
 const int TAG_FUNC_STNNUM_EDIT = 320;
 const int TAG_FUNC_STNNUM_SELECT = 329;
 
+auto url = "https://bbence.hu/StandNumberPlugin/StandNumberPlugin-config.json";
+
 
 inline static bool startsWith(const char* pre, const char* str)
 {
 	size_t lenpre = strlen(pre), lenstr = strlen(str);
 	return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
 };
+
+std::stringstream get_response(std::string_view url)
+{
+	std::stringstream str;
+	try
+	{
+		curl::curl_ios<std::stringstream> writer(str);
+		curl::curl_easy easy(writer);
+
+		easy.add<CURLOPT_URL>(url.data());
+		easy.add<CURLOPT_FOLLOWLOCATION>(1L);
+
+		easy.perform();
+	}
+	catch (curl::curl_easy_exception const& error)
+	{
+		auto errors = error.get_traceback();
+		error.print_traceback();
+	}
+
+	return str;
+}
 
 CStandNumberPlugin::CStandNumberPlugin()
 	: CPlugIn(COMPATIBILITY_CODE,
@@ -58,7 +88,7 @@ CStandNumberPlugin::CStandNumberPlugin()
 	GetModuleFileNameA((HINSTANCE)&__ImageBase, fullPluginPath, sizeof(fullPluginPath));
 	std::string fullPluginPathStr(fullPluginPath);
 	pluginDirectory = fullPluginPathStr.substr(0, fullPluginPathStr.find_last_of("\\"));
-	LoadStandConfig("StandNumberPlugin-config.json");
+	LoadStandConfig();
 	LoadAircraftConfig("ICAO_Aircraft.json");
 
 	RegisterTagItemType("Gate occupied", TAG_ITEM_GATE_OCCUPIED);
@@ -308,23 +338,18 @@ void CStandNumberPlugin::OnTimer(int Counter)
 
 }
 
-void CStandNumberPlugin::LoadStandConfig(const std::string& filename) {
-	std::ifstream file(pluginDirectory + "\\" + filename);
-	std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-	if (fileContent.empty()) {
-		DISPLAY_WARNING((filename + ": the JSON-file was not found or is empty").c_str());
-		return;
-	}
-
+void CStandNumberPlugin::LoadStandConfig(void) {
 	using namespace rapidjson;
+	auto ConfigJson = get_response(url);
+	BasicIStreamWrapper strStream(ConfigJson);
+
 	Document document;
-	document.Parse(fileContent.c_str());
+	document.ParseStream(strStream);
 
 	if (document.HasParseError()) {
 		ParseErrorCode code = document.GetParseError();
 		size_t offset = document.GetErrorOffset();
-		std::string message = filename + ": error while parsing JSON at position " + std::to_string(offset) + ": '" + fileContent.substr(offset, 10) + "'";
+		std::string message = "error while parsing config JSON";
 		DISPLAY_WARNING(message.c_str());
 		return;
 	}
