@@ -1,3 +1,0 @@
-{"dsn":"https://5d1300eb9729b6239248e2704fd5f7c0@o4506599172014080.ingest.sentry.io/4506599177846784"}
-{"type":"session","length":212}
-{"init":true,"sid":"6dcbb739-ff47-4757-369e-72834b0c2395","status":"crashed","errors":1,"started":"2024-04-29T17:44:06.891Z","duration":2555.281,"attrs":{"release":"euroscope@3.2.8.0","environment":"production"}}

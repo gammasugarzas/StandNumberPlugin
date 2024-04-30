@@ -24,11 +24,11 @@ int STN_AcMaxDistanceToGate = 55;			// stand occupation max distance from the ga
 
 bool DebugPrint = false;					// enable debug printf flag
 
-const   int     TAG_ITEM_GATE_OCCUPIED = 100;
-const   int     TAG_ITEM_GATE_PLANNED  = 102;
-const   int     TAG_ITEM_GATE_NUMBER = 103;
-const   int     TAG_ITEM_GATE_OCCUPIED_CS = 104;
-const   int     TAG_ITEM_GATE_PLANNED_CS = 105;
+const   int     TAG_ITEM_GATE_OCCUPIED = 300;
+const   int     TAG_ITEM_GATE_PLANNED  = 302;
+const   int     TAG_ITEM_GATE_NUMBER = 303;
+const   int     TAG_ITEM_GATE_OCCUPIED_CS = 304;
+const   int     TAG_ITEM_GATE_PLANNED_CS = 305;
 
 
 inline static bool startsWith(const char* pre, const char* str)
@@ -66,32 +66,33 @@ CStandNumberPlugin::CStandNumberPlugin()
 
 
 	// register my AC list
-	m_GateList = RegisterFpList("Gate occupation list");
+	m_GateStatusList = RegisterFpList("Gate occupation list");
 
-	if (m_GateList.GetColumnNumber() == 0)
+	if (m_GateStatusList.GetColumnNumber() == 0)
 	{
 		// fill in the default columns
-		m_GateList.AddColumnDefinition("NUM", 6, false,
-			NULL, TAG_ITEM_GATE_NUMBER,
+		m_GateStatusList.AddColumnDefinition("NUM", 6, false,
+			PLUGIN_NAME, TAG_ITEM_GATE_NUMBER,
 			NULL, TAG_ITEM_FUNCTION_NO,
 			NULL, TAG_ITEM_FUNCTION_NO);
-		m_GateList.AddColumnDefinition("OCC", 6, false,
-			NULL, TAG_ITEM_GATE_OCCUPIED,
+		m_GateStatusList.AddColumnDefinition("OCC", 6, false,
+			PLUGIN_NAME, TAG_ITEM_GATE_OCCUPIED,
 			NULL, TAG_ITEM_FUNCTION_NO,
 			NULL, TAG_ITEM_FUNCTION_NO);
-		m_GateList.AddColumnDefinition("C/S", 6, false,
-			NULL, TAG_ITEM_GATE_OCCUPIED_CS,
+		m_GateStatusList.AddColumnDefinition("C/S", 6, false,
+			PLUGIN_NAME, TAG_ITEM_GATE_OCCUPIED_CS,
 			NULL, TAG_ITEM_FUNCTION_NO,
 			NULL, TAG_ITEM_FUNCTION_NO);
-		m_GateList.AddColumnDefinition("PLAN", 6, false,
-			NULL, TAG_ITEM_GATE_PLANNED,
+		m_GateStatusList.AddColumnDefinition("PLAN", 6, false,
+			PLUGIN_NAME, TAG_ITEM_GATE_PLANNED,
 			NULL, TAG_ITEM_FUNCTION_NO,
 			NULL, TAG_ITEM_FUNCTION_NO);
-		m_GateList.AddColumnDefinition("C/S", 6, false,
-			NULL, TAG_ITEM_GATE_PLANNED_CS,
+		m_GateStatusList.AddColumnDefinition("C/S", 6, false,
+			PLUGIN_NAME, TAG_ITEM_GATE_PLANNED_CS,
 			NULL, TAG_ITEM_FUNCTION_NO,
 			NULL, TAG_ITEM_FUNCTION_NO);
 	}
+	m_GateStatusList.ShowFpList(false);
 }
 
 CStandNumberPlugin::~CStandNumberPlugin()
@@ -103,47 +104,44 @@ CStandNumberPlugin::~CStandNumberPlugin()
 void CStandNumberPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget, int ItemCode,
 	                                  int TagData, char sItemString[16], int* pColorCode, COLORREF* pRGB, double* pFontSize)
 {
-	int AcIdx;
+	string occ, plan;
+	int Idx;
 
 	// only for flight plans
 	if (!FlightPlan.IsValid())
 		return;
 
-	// get the AC index
-	AcIdx = 0;
-	for (const GateOccupiedListItem& ListItem : GateOccupiedListData)
+	if (GetGateByCallsign(FlightPlan.GetCallsign(), Idx))
 	{
-		if (strcmp(ListItem.Callsign.c_str(), FlightPlan.GetCallsign()) == 0)
+		GatesAndStands GateToList = LHBPGatesAndStands.at(Idx);
+
+		// stitch by the code
+		switch (ItemCode)
 		{
+		case TAG_ITEM_GATE_NUMBER:
+			strcpy(sItemString, GateToList.Number.c_str());
 			break;
-		}
-		AcIdx++;
+
+		case TAG_ITEM_GATE_OCCUPIED:
+			occ = (GateToList.Occupied == true) ? "YES" : "NO";
+			strcpy(sItemString, occ.c_str());
+			break;
+
+		case TAG_ITEM_GATE_OCCUPIED_CS:
+			strcpy(sItemString, GateToList.Callsign.c_str());
+			break;
+
+		case TAG_ITEM_GATE_PLANNED:
+			plan = (GateToList.Planned == true) ? "YES" : "NO";
+			strcpy(sItemString, plan.c_str());
+			break;
+
+
+		case TAG_ITEM_GATE_PLANNED_CS:
+			strcpy(sItemString, GateToList.PlannedCallsign.c_str());
+			break;
+		}// switch by the code
 	}
-
-	// stitch by the code
-	switch (ItemCode)
-	{
-	case TAG_ITEM_GATE_NUMBER:
-		strcpy(sItemString, GateOccupiedListData.at(AcIdx).Number.c_str());
-		break;
-
-	case TAG_ITEM_GATE_OCCUPIED:
-		strcpy(sItemString, GateOccupiedListData.at(AcIdx).Occupied.c_str());
-		break;
-
-	case TAG_ITEM_GATE_OCCUPIED_CS:
-		strcpy(sItemString, GateOccupiedListData.at(AcIdx).Callsign.c_str());
-		break;
-
-	case TAG_ITEM_GATE_PLANNED:
-		strcpy(sItemString, GateOccupiedListData.at(AcIdx).Planned.c_str());
-		break;
-
-
-	case TAG_ITEM_GATE_PLANNED_CS:
-		strcpy(sItemString, GateOccupiedListData.at(AcIdx).PlannedCallsign.c_str());
-		break;
-	}// switch by the code
 }
 
 
@@ -167,30 +165,24 @@ bool CStandNumberPlugin::OnCompileCommand(const char* sCommandLine)
 		return NULL;
 	}
 
-	if (startsWith(".stndeb", sCommandLine))
-	{
-		DebugPrint = !DebugPrint;
-		return NULL;
-	}
-
 	if (startsWith(".stnshow", sCommandLine))
 	{
-		m_GateList.ShowFpList(true);
+		m_GateStatusList.ShowFpList(true);
 		return NULL;
 	}
 
 	if (startsWith(".stnhide", sCommandLine))
 	{
-		m_GateList.ShowFpList(false);
+		m_GateStatusList.ShowFpList(false);
 		return NULL;
 	}
 
 	return false;
 }
 
-void CStandNumberPlugin::OnFlightPlanDisconnect(CFlightPlan FlightPlan)
+void CStandNumberPlugin::OnFlightPlanDisconnect(CFlightPlan FP_f)
 {
-	string Callsign = FlightPlan.GetCallsign();
+	string Callsign = FP_f.GetCallsign();
 	if (CallsignGateMap.find(Callsign) != CallsignGateMap.end())
 	{
 		map<string, int>::iterator CallsignGatePair = CallsignGateMap.find(Callsign);
@@ -200,6 +192,12 @@ void CStandNumberPlugin::OnFlightPlanDisconnect(CFlightPlan FlightPlan)
 			GateToEdit.Occupied = false;
 			GateToEdit.Callsign = "";
 			CallsignGateMap.erase(Callsign);
+
+			m_GateStatusList.RemoveFpFromTheList(FP_f);
+			if (GateToEdit.Planned)
+			{
+				m_GateStatusList.AddFpToTheList(FP_f);
+			}
 		}
 	}
 }
@@ -217,7 +215,7 @@ void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 		if (IsDepartingAircraftWithStand(RadarTarget, FLightPlan))
 		{
 			FLightPlan.GetControllerAssignedData().SetScratchPadString("");
-			FreeOccupiedGate(CallSign);
+			FreeOccupiedGate(CallSign, FLightPlan);
 		}
 
 		if (IsDepartingAircraftWithoutStand(RadarTarget, FLightPlan))
@@ -232,13 +230,15 @@ void CStandNumberPlugin::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 
 			if (Success)
 			{
-				PlanGate(CallSign, GateName);
+				PlanGate(CallSign, GateName, FLightPlan);
 			}
 		}
 
+		CheckArrivinAircraftsStandForUpdate(RadarTarget, FLightPlan);
+
 		if (!IsGateStillOccupiedByCallsign(CallSign, FLightPlan))
 		{
-			FreeOccupiedGate(CallSign);
+			FreeOccupiedGate(CallSign, FLightPlan);
 		}
 	}
 }
@@ -384,7 +384,6 @@ void CStandNumberPlugin::LoadAircraftConfig(const std::string& filename) {
 	}
 }
 
-
 string CStandNumberPlugin::GetClosestStand(CPosition ACPos_f)
 {
 	struct {
@@ -411,12 +410,6 @@ string CStandNumberPlugin::GetClosestStand(CPosition ACPos_f)
 			}
 		}
 		index++;
-	}
-	
-	if (DebugPrint)
-	{
-		string DisplayMsg = { "Closest distance " + to_string(Closest.Dist) };
-		DISPLAY_DEBUG(DisplayMsg.c_str());
 	}
 
 	return Closest.Number;
@@ -488,7 +481,6 @@ string CStandNumberPlugin::GetGateStatus(void)
 	return status;
 }
 
-
 bool CStandNumberPlugin::IsRelevantFLightplan(CFlightPlan FP_f)
 {
 	string CtrlId = FP_f.GetTrackingControllerId();
@@ -542,6 +534,47 @@ bool CStandNumberPlugin::IsArrivingAircraftWithoutStand(CRadarTarget RT_f, CFlig
 	return false;
 }
 
+bool CStandNumberPlugin::CheckArrivinAircraftsStandForUpdate(CRadarTarget RT_f, CFlightPlan FP_f)
+{
+	int GateIdx;
+	string orig, nostring;
+
+	if ((strcmp("LHBP", FP_f.GetFlightPlanData().GetDestination()) == 0) &&
+		(FP_f.GetDistanceToDestination() <= STN_AssignRange) &&
+		(RT_f.GetPosition().GetPressureAltitude() >= STN_DeleteAlt) &&
+		(strlen(FP_f.GetControllerAssignedData().GetScratchPadString()) != 0))
+	{
+		if (GetGateByCallsign(FP_f.GetCallsign(), GateIdx))
+		{
+			string GateNumber = LHBPGatesAndStands.at(GateIdx).Number;
+
+			if (strcmp(FP_f.GetControllerAssignedData().GetScratchPadString(), GateNumber.c_str()) != 0)
+			{
+				LHBPGatesAndStands.at(GateIdx).Planned = false;
+				LHBPGatesAndStands.at(GateIdx).PlannedCallsign = "";
+				CallsignGateMap.erase(FP_f.GetCallsign());
+				PlanGate(FP_f.GetCallsign(), FP_f.GetControllerAssignedData().GetScratchPadString(), FP_f);
+				m_GateStatusList.RemoveFpFromTheList(FP_f);
+				m_GateStatusList.AddFpToTheList(FP_f);
+			}
+		}
+		else
+		{
+			orig = FP_f.GetControllerAssignedData().GetScratchPadString();
+			nostring = " NO";
+			if (strcmp(orig.c_str(), nostring.c_str()) != 0)
+			{
+				PlanGate(FP_f.GetCallsign(), FP_f.GetControllerAssignedData().GetScratchPadString(), FP_f);
+				m_GateStatusList.RemoveFpFromTheList(FP_f);
+				m_GateStatusList.AddFpToTheList(FP_f);
+			}
+		
+		}
+	}
+
+	return false;
+}
+
 bool CStandNumberPlugin::GetGateByCallsign(string CallSign_f, int &GateIdx_f)
 {
 	if (CallsignGateMap.find(CallSign_f) != CallsignGateMap.end())
@@ -571,7 +604,7 @@ bool CStandNumberPlugin::GetGateByNumber(string GateNumber_f, int &GateIdx_f)
 	return false;
 }
 
-void CStandNumberPlugin::FreeOccupiedGate(string Callsign_f)
+void CStandNumberPlugin::FreeOccupiedGate(string Callsign_f, CFlightPlan FP_f)
 {
 	int GateIdx = 0;
 	if (GetGateByCallsign(Callsign_f, GateIdx))
@@ -581,6 +614,12 @@ void CStandNumberPlugin::FreeOccupiedGate(string Callsign_f)
 			LHBPGatesAndStands.at(GateIdx).Occupied = false;
 			LHBPGatesAndStands.at(GateIdx).Callsign = "";
 			CallsignGateMap.erase(Callsign_f);
+
+			m_GateStatusList.RemoveFpFromTheList(FP_f);
+			if (LHBPGatesAndStands.at(GateIdx).Planned)
+			{
+				m_GateStatusList.AddFpToTheList(FP_f);
+			}
 		}
 	}
 }
@@ -598,16 +637,8 @@ void CStandNumberPlugin::ReserveOccupiedGate(string Callsign_f, CRadarTarget RT_
 		CallsignGateMap.insert(pair<string, int>(Callsign_f, GateIdx));
 		FP_f.GetControllerAssignedData().SetScratchPadString(LHBPGatesAndStands.at(GateIdx).Number.c_str());
 
-		GateOccupiedListItem GateListData;
-
-		GateListData.Number = LHBPGatesAndStands.at(GateIdx).Number;
-		GateListData.Callsign = Callsign_f;
-		GateListData.Occupied = "YES";
-		GateListData.PlannedCallsign = "";
-		GateListData.Planned = "NO";
-		GateOccupiedListData.push_back(GateListData);
-		m_GateList.RemoveFpFromTheList(FP_f);
-		m_GateList.AddFpToTheList(FP_f);
+		m_GateStatusList.RemoveFpFromTheList(FP_f);
+		m_GateStatusList.AddFpToTheList(FP_f);
 
 		if (LHBPGatesAndStands.at(GateIdx).Planned)
 		{
@@ -625,7 +656,7 @@ void CStandNumberPlugin::ReserveOccupiedGate(string Callsign_f, CRadarTarget RT_
 	}
 }
 
-void CStandNumberPlugin::PlanGate(string Callsign_f, string GateName_f)
+void CStandNumberPlugin::PlanGate(string Callsign_f, string GateName_f, CFlightPlan FP_f)
 {
 	bool Success = false;
 	GatesAndStands GateToEdit;
@@ -638,14 +669,8 @@ void CStandNumberPlugin::PlanGate(string Callsign_f, string GateName_f)
 		LHBPGatesAndStands.at(GateIdx).PlannedCallsign = Callsign_f;
 		CallsignGateMap.insert(pair<string, int>(Callsign_f, GateIdx));
 
-		GateOccupiedListItem GateListData;
-
-		GateListData.Number = GateToEdit.Number;
-		GateListData.Callsign = Callsign_f;
-		GateListData.Occupied = "YES";
-		GateListData.PlannedCallsign = "";
-		GateListData.Planned = "NO";
-		GateOccupiedListData.push_back(GateListData);
+		m_GateStatusList.RemoveFpFromTheList(FP_f);
+		m_GateStatusList.AddFpToTheList(FP_f);
 	}
 }
 

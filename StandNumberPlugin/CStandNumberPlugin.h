@@ -19,15 +19,6 @@ typedef struct GatesAndStands
 	string Callsign;
 } GatesAndStands;
 
-typedef struct GateOccupiedListItem
-{
-	string Number;
-	string Occupied;
-	string Callsign;
-	string Planned;
-	string PlannedCallsign;
-} GateOccupiedListItem;
-
 typedef struct AirlineStands
 {
 	string AirlineCode;
@@ -48,15 +39,14 @@ public:
     virtual ~CStandNumberPlugin(void);
 
 	bool OnCompileCommand(const char* command);
-	void OnFlightPlanDisconnect(CFlightPlan FlightPlan);
+	void OnFlightPlanDisconnect(CFlightPlan FP_f);
 	void OnRadarTargetPositionUpdate(CRadarTarget RadarTarget);
 	void OnTimer(int Counter);
-	void OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget, int ItemCode,
+	virtual void OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget, int ItemCode,
 		int TagData, char sItemString[16], int* pColorCode, COLORREF* pRGB, double* pFontSize);
 
 protected:
-	CFlightPlanList  m_GateList;
-	vector< GateOccupiedListItem> GateOccupiedListData;
+	CFlightPlanList  m_GateStatusList;
 
 private:
 	std::string pluginDirectory;
@@ -74,12 +64,13 @@ private:
 	bool IsDepartingAircraftWithStand(CRadarTarget RT_f, CFlightPlan FP_f);
 	bool IsDepartingAircraftWithoutStand(CRadarTarget RT_f, CFlightPlan FP_f);
 	bool IsArrivingAircraftWithoutStand(CRadarTarget RT_f, CFlightPlan FP_f);
+	bool CheckArrivinAircraftsStandForUpdate(CRadarTarget RT_f, CFlightPlan FP_f);
 	bool IsGateStillOccupiedByCallsign(string Callsign_f, CFlightPlan FP_f);
 	bool GetGateByCallsign(string CallSign_f, int& GateIdx);
 	bool GetGateByNumber(string GateNumber_f, int& GateIdx_f);
-	void FreeOccupiedGate(string Callsign_f);
+	void FreeOccupiedGate(string Callsign_f, CFlightPlan FP_f);
 	void ReserveOccupiedGate(string Callsign_f, CRadarTarget RT_f, CFlightPlan FP_f);
-	void PlanGate(string Callsign_f, string GateName_f);
+	void PlanGate(string Callsign_f, string GateName_f, CFlightPlan FP_f);
 	double GetWingspan(CFlightPlan FP_f);
 };
 
