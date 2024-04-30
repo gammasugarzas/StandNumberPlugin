@@ -24,11 +24,14 @@ int STN_AcMaxDistanceToGate = 55;			// stand occupation max distance from the ga
 
 bool DebugPrint = false;					// enable debug printf flag
 
-const   int     TAG_ITEM_GATE_OCCUPIED = 300;
-const   int     TAG_ITEM_GATE_PLANNED  = 302;
-const   int     TAG_ITEM_GATE_NUMBER = 303;
-const   int     TAG_ITEM_GATE_OCCUPIED_CS = 304;
-const   int     TAG_ITEM_GATE_PLANNED_CS = 305;
+const int TAG_ITEM_GATE_OCCUPIED = 300;
+const int TAG_ITEM_GATE_PLANNED  = 302;
+const int TAG_ITEM_GATE_NUMBER = 303;
+const int TAG_ITEM_GATE_OCCUPIED_CS = 304;
+const int TAG_ITEM_GATE_PLANNED_CS = 305;
+
+const int TAG_FUNC_STNNUM_EDIT = 320;
+const int TAG_FUNC_STNNUM_SELECT = 329;
 
 
 inline static bool startsWith(const char* pre, const char* str)
@@ -64,6 +67,9 @@ CStandNumberPlugin::CStandNumberPlugin()
 	RegisterTagItemType("Gate planned callsign", TAG_ITEM_GATE_PLANNED_CS);
 	RegisterTagItemType("Gate occupied callsign", TAG_ITEM_GATE_OCCUPIED_CS);
 
+	// and also the functions behind
+	RegisterTagItemFunction("Stand number editor", TAG_FUNC_STNNUM_EDIT);
+	RegisterTagItemFunction("Stand number selected", TAG_FUNC_STNNUM_SELECT);
 
 	// register my AC list
 	m_GateStatusList = RegisterFpList("Gate occupation list");
@@ -73,7 +79,7 @@ CStandNumberPlugin::CStandNumberPlugin()
 		// fill in the default columns
 		m_GateStatusList.AddColumnDefinition("NUM", 6, false,
 			PLUGIN_NAME, TAG_ITEM_GATE_NUMBER,
-			NULL, TAG_ITEM_FUNCTION_NO,
+			PLUGIN_NAME, TAG_FUNC_STNNUM_EDIT,
 			NULL, TAG_ITEM_FUNCTION_NO);
 		m_GateStatusList.AddColumnDefinition("OCC", 6, false,
 			PLUGIN_NAME, TAG_ITEM_GATE_OCCUPIED,
@@ -143,6 +149,60 @@ void CStandNumberPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget Radar
 		}// switch by the code
 	}
 }
+
+
+void CStandNumberPlugin::OnFunctionCall(int FunctionId,	const char* sItemString, POINT Pt, RECT Area)
+{
+	CFlightPlan  FP;
+	int Idx;
+
+	FP = FlightPlanSelectASEL();
+	if (!FP.IsValid())
+		return;
+
+	if (GetGateByCallsign(FP.GetCallsign(), Idx))
+	{
+		GatesAndStands GateToList = LHBPGatesAndStands.at(Idx);
+
+		// switch by the function ID
+		switch (FunctionId)
+		{
+		case TAG_FUNC_STNNUM_EDIT: // TAG function
+
+			// start a popup list
+			OpenPopupList(Area, "Number", 1);
+
+			for (auto& gate : LHBPGatesAndStands)
+			{
+				if (strcmp(gate.Number.c_str(), GateToList.Number.c_str()) == 0)
+				{
+					AddPopupListElement(gate.Number.c_str(), "",
+						TAG_FUNC_STNNUM_SELECT,
+						false,
+						POPUP_ELEMENT_NO_CHECKBOX,
+						true,
+						true);
+				}
+				else
+				{
+					AddPopupListElement(gate.Number.c_str(), "",
+						TAG_FUNC_STNNUM_SELECT,
+						false,
+						POPUP_ELEMENT_NO_CHECKBOX,
+						false,
+						false);
+				}
+			}
+			break;
+
+		case TAG_FUNC_STNNUM_SELECT:
+			FP.GetControllerAssignedData().SetScratchPadString(sItemString);
+			break;
+
+		}// switch by the function ID
+	}
+}
+
 
 
 bool CStandNumberPlugin::OnCompileCommand(const char* sCommandLine)
