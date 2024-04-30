@@ -311,6 +311,13 @@
   ],
   "gates": [
     {
+      "number": "220",
+      "loncoord": "E019.15.20.088",
+      "latcoord": "N047.26.00.852",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
       "number": "221",
       "loncoord": "E019.15.21.420",
       "latcoord": "N047.26.02.040",
@@ -353,16 +360,44 @@
       "schengen": true
     },
     {
+      "number": "227",
+      "loncoord": "E019.15.34.128",
+      "latcoord": "N047.26.11.508",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
+      "number": "210",
+      "loncoord": "E019.15.34.956",
+      "latcoord": "N047.26.06.396",
+      "wingspan": 36.0,
+      "schengen": true
+    },
+    {
       "number": "211",
       "loncoord": "E019.15.36.792",
       "latcoord": "N047.26.07.908",
       "wingspan": 36.0,
       "schengen": true
+    },	
+    {
+      "number": "212",
+      "loncoord": "E019.15.38.376",
+      "latcoord": "N047.26.08.952",
+      "wingspan": 36.0,
+      "schengen": true
     },
     {
-      "number": "044",
-      "loncoord": "E019.15.44.784",
-      "latcoord": "N047.26.04.164",
+      "number": "12A",
+      "loncoord": "E019.15.36.900",
+      "latcoord": "N047.26.07.872",
+      "wingspan": 47.57,
+      "schengen": true
+    },
+	{
+      "number": "270",
+      "loncoord": "E019.15.48.420",
+      "latcoord": "N047.26.09.204",
       "wingspan": 36.0,
       "schengen": true
     },
@@ -409,6 +444,13 @@
       "schengen": true
     },
     {
+      "number": "277",
+      "loncoord": "E019.15.59.436",
+      "latcoord": "N047.26.02.148",
+      "wingspan": 36.0,
+      "schengen": true
+    },	
+    {
       "number": "278",
       "loncoord": "E019.16.01.524",
       "latcoord": "N047.26.00.708",
@@ -423,47 +465,124 @@
       "schengen": true
     },
     {
-      "number": "270",
-      "loncoord": "E019.15.48.420",
-      "latcoord": "N047.26.09.204",
+      "number": "O31",
+      "loncoord": "E019.15.36.072",
+      "latcoord": "N047.25.51.096",
       "wingspan": 36.0,
-      "schengen": true
+      "schengen": false
     },
     {
-      "number": "277",
-      "loncoord": "E019.15.59.436",
-      "latcoord": "N047.26.02.148",
+      "number": "O32",
+      "loncoord": "E019.15.34.740",
+      "latcoord": "N047.25.52.284",
       "wingspan": 36.0,
-      "schengen": true
+      "schengen": false
     },
     {
-      "number": "210",
-      "loncoord": "E019.15.34.956",
-      "latcoord": "N047.26.06.396",
+      "number": "O33",
+      "loncoord": "E019.15.33.048",
+      "latcoord": "N047.25.53.148",
       "wingspan": 36.0,
-      "schengen": true
+      "schengen": false
     },
     {
-      "number": "212",
-      "loncoord": "E019.15.38.376",
-      "latcoord": "N047.26.08.952",
-      "wingspan": 36.0,
-      "schengen": true
+      "number": "034",
+      "loncoord": "E019.15.31.464",
+      "latcoord": "N047.25.54.840",
+      "wingspan": 65.0,
+      "schengen": false
     },
     {
-      "number": "220",
-      "loncoord": "E019.15.20.088",
-      "latcoord": "N047.26.00.852",
+      "number": "34L",
+      "loncoord": "E019.15.29.700",
+      "latcoord": "N047.25.54.876",
       "wingspan": 36.0,
-      "schengen": true
+      "schengen": false
     },
     {
-      "number": "227",
-      "loncoord": "E019.15.34.128",
-      "latcoord": "N047.26.11.508",
+      "number": "34R",
+      "loncoord": "E019.15.31.932",
+      "latcoord": "N047.25.54.444",
       "wingspan": 36.0,
-      "schengen": true
+      "schengen": false
+    },	
+    {
+      "number": "035",
+      "loncoord": "E019.15.28.548",
+      "latcoord": "N047.25.56.712",
+      "wingspan": 65.0,
+      "schengen": false
     },
+    {
+      "number": "35L",
+      "loncoord": "E019.15.26.784",
+      "latcoord": "N047.25.56.820",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "35R",
+      "loncoord": "E019.15.28.980",
+      "latcoord": "N047.25.56.388",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "036",
+      "loncoord": "E019.15.25.452",
+      "latcoord": "N047.25.58.584",
+      "wingspan": 65.0,
+      "schengen": false
+    },
+    {
+      "number": "36L",
+      "loncoord": "E019.15.23.940",
+      "latcoord": "N047.25.58.692",
+      "wingspan": 28.72,
+      "schengen": false
+    },
+    {
+      "number": "36R",
+      "loncoord": "E019.15.26.028",
+      "latcoord": "N047.25.58.368",
+      "wingspan": 36.0,
+      "schengen": false
+    },	
+    {
+      "number": "037",
+      "loncoord": "E019.15.28.584",
+      "latcoord": "N047.26.01.788",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "038",
+      "loncoord": "E019.15.30.204",
+      "latcoord": "N047.26.00.780",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "039",
+      "loncoord": "E019.15.33.408",
+      "latcoord": "N047.25.58.836",
+      "wingspan": 65.0,
+      "schengen": false
+    },
+    {
+      "number": "39L",
+      "loncoord": "E019.15.33.768",
+      "latcoord": "N047.25.58.692",
+      "wingspan": 36.0,
+      "schengen": false
+    },
+    {
+      "number": "39R",
+      "loncoord": "E019.15.32.004",
+      "latcoord": "N047.25.59.736",
+      "wingspan": 36.0,
+      "schengen": false
+    },	
     {
       "number": "042",
       "loncoord": "E019.15.40.356",
@@ -478,6 +597,13 @@
       "wingspan": 51.0,
       "schengen": true
     },
+    {
+      "number": "044",
+      "loncoord": "E019.15.44.784",
+      "latcoord": "N047.26.04.164",
+      "wingspan": 36.0,
+      "schengen": true
+    },	
     {
       "number": "045",
       "loncoord": "E019.15.46.800",
@@ -598,30 +724,44 @@
       "schengen": true
     },
     {
-      "number": "C4R",
-      "loncoord": "E019.16.41.821",
-      "latcoord": "N047.25.33.148",
+      "number": "0C1",
+      "loncoord": "E019.16.37.920",
+      "latcoord": "N047.25.42.204",
+      "wingspan": 68.59,
+      "schengen": false
+    },	
+    {
+      "number": "C1L",
+      "loncoord": "E019.16.37.704",
+      "latcoord": "N047.25.41.052",
       "wingspan": 36.0,
       "schengen": false
     },
     {
-      "number": "0C4",
-      "loncoord": "E019.16.43.418",
-      "latcoord": "N047.25.33.453",
+      "number": "C1R",
+      "loncoord": "E019.16.38.388",
+      "latcoord": "N047.25.42.528",
+      "wingspan": 36.0,
+      "schengen": false
+    },	
+    {
+      "number": "0C2",
+      "loncoord": "E019.16.35.112",
+      "latcoord": "N047.25.40.152",
       "wingspan": 68.59,
       "schengen": false
     },
     {
-      "number": "C4L",
-      "loncoord": "E019.16.43.773",
-      "latcoord": "N047.25.36.148",
+      "number": "C2L",
+      "loncoord": "E019.16.34.896",
+      "latcoord": "N047.25.38.964",
       "wingspan": 36.0,
       "schengen": false
     },
     {
-      "number": "C3R",
-      "loncoord": "E019.16.44.371",
-      "latcoord": "N047.25.35.515",
+      "number": "C2R",
+      "loncoord": "E019.16.35.580",
+      "latcoord": "N047.25.40.440",
       "wingspan": 36.0,
       "schengen": false
     },
@@ -640,173 +780,33 @@
       "schengen": false
     },
     {
-      "number": "O31",
-      "loncoord": "E019.15.36.072",
-      "latcoord": "N047.25.51.096",
+      "number": "C3R",
+      "loncoord": "E019.16.44.371",
+      "latcoord": "N047.25.35.515",
       "wingspan": 36.0,
       "schengen": false
-    },
+    },		
     {
-      "number": "O32",
-      "loncoord": "E019.15.34.740",
-      "latcoord": "N047.25.52.284",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "O33",
-      "loncoord": "E019.15.33.048",
-      "latcoord": "N047.25.53.148",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "34R",
-      "loncoord": "E019.15.31.932",
-      "latcoord": "N047.25.54.444",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "034",
-      "loncoord": "E019.15.31.464",
-      "latcoord": "N047.25.54.840",
-      "wingspan": 65.0,
-      "schengen": false
-    },
-    {
-      "number": "34L",
-      "loncoord": "E019.15.29.700",
-      "latcoord": "N047.25.54.876",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "35R",
-      "loncoord": "E019.15.28.980",
-      "latcoord": "N047.25.56.388",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "035",
-      "loncoord": "E019.15.28.548",
-      "latcoord": "N047.25.56.712",
-      "wingspan": 65.0,
-      "schengen": false
-    },
-    {
-      "number": "35L",
-      "loncoord": "E019.15.26.784",
-      "latcoord": "N047.25.56.820",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "36R",
-      "loncoord": "E019.15.26.028",
-      "latcoord": "N047.25.58.368",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "036",
-      "loncoord": "E019.15.25.452",
-      "latcoord": "N047.25.58.584",
-      "wingspan": 65.0,
-      "schengen": false
-    },
-    {
-      "number": "36L",
-      "loncoord": "E019.15.23.940",
-      "latcoord": "N047.25.58.692",
-      "wingspan": 28.72,
-      "schengen": false
-    },
-    {
-      "number": "037",
-      "loncoord": "E019.15.28.584",
-      "latcoord": "N047.26.01.788",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "038",
-      "loncoord": "E019.15.30.204",
-      "latcoord": "N047.26.00.780",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "39R",
-      "loncoord": "E019.15.32.004",
-      "latcoord": "N047.25.59.736",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "039",
-      "loncoord": "E019.15.33.408",
-      "latcoord": "N047.25.58.836",
-      "wingspan": 65.0,
-      "schengen": false
-    },
-    {
-      "number": "39L",
-      "loncoord": "E019.15.33.768",
-      "latcoord": "N047.25.58.692",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "12A",
-      "loncoord": "E019.15.36.900",
-      "latcoord": "N047.26.07.872",
-      "wingspan": 47.57,
-      "schengen": true
-    },
-    {
-      "number": "C1R",
-      "loncoord": "E019.16.38.388",
-      "latcoord": "N047.25.42.528",
-      "wingspan": 36.0,
-      "schengen": false
-    },
-    {
-      "number": "0C1",
-      "loncoord": "E019.16.37.920",
-      "latcoord": "N047.25.42.204",
+      "number": "0C4",
+      "loncoord": "E019.16.43.418",
+      "latcoord": "N047.25.33.453",
       "wingspan": 68.59,
       "schengen": false
     },
     {
-      "number": "C1L",
-      "loncoord": "E019.16.37.704",
-      "latcoord": "N047.25.41.052",
+      "number": "C4L",
+      "loncoord": "E019.16.43.773",
+      "latcoord": "N047.25.36.148",
       "wingspan": 36.0,
       "schengen": false
     },
     {
-      "number": "C2R",
-      "loncoord": "E019.16.35.580",
-      "latcoord": "N047.25.40.440",
+      "number": "C4R",
+      "loncoord": "E019.16.41.821",
+      "latcoord": "N047.25.33.148",
       "wingspan": 36.0,
       "schengen": false
-    },
-    {
-      "number": "0C2",
-      "loncoord": "E019.16.35.112",
-      "latcoord": "N047.25.40.152",
-      "wingspan": 68.59,
-      "schengen": false
-    },
-    {
-      "number": "C2L",
-      "loncoord": "E019.16.34.896",
-      "latcoord": "N047.25.38.964",
-      "wingspan": 36.0,
-      "schengen": false
-    },
+    },	
     {
       "number": "101",
       "loncoord": "E019.13.23.772",
@@ -829,13 +829,6 @@
       "schengen": true
     },
     {
-      "number": "105",
-      "loncoord": "E019.13.29.424",
-      "latcoord": "N047.26.31.056",
-      "wingspan": 48.0,
-      "schengen": true
-    },
-    {
       "number": "104",
       "loncoord": "E019.13.29.964",
       "latcoord": "N047.26.30.912",
@@ -843,17 +836,17 @@
       "schengen": true
     },
     {
+      "number": "105",
+      "loncoord": "E019.13.29.424",
+      "latcoord": "N047.26.31.056",
+      "wingspan": 48.0,
+      "schengen": true
+    },	
+    {
       "number": "106",
       "loncoord": "E019.13.30.900",
       "latcoord": "N047.26.29.616",
       "wingspan": 36.0,
-      "schengen": true
-    },
-    {
-      "number": "108",
-      "loncoord": "E019.13.31.116",
-      "latcoord": "N047.26.28.680",
-      "wingspan": 48.0,
       "schengen": true
     },
     {
@@ -863,6 +856,13 @@
       "wingspan": 36.0,
       "schengen": true
     },
+    {
+      "number": "108",
+      "loncoord": "E019.13.31.116",
+      "latcoord": "N047.26.28.680",
+      "wingspan": 48.0,
+      "schengen": true
+    },	
     {
       "number": "150",
       "loncoord": "E019.13.31.404",
