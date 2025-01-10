@@ -39,7 +39,7 @@ const int TAG_ITEM_GATE_PLANNED_CS = 305;
 const int TAG_FUNC_STNNUM_EDIT = 320;
 const int TAG_FUNC_STNNUM_SELECT = 329;
 
-auto url = "https://bbence.hu/StandNumberPlugin/StandNumberPlugin-config.json";
+auto url = "https://ops.vacchun.hu/euroscope/StandNumberPlugin-config.json";
 
 
 inline static bool startsWith(const char* pre, const char* str)
