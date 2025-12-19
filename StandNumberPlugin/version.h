@@ -10,6 +10,6 @@ constexpr auto GITHUB_LINK = "https://github.com/gammasugarzas/StandNumberPlugin
 #ifdef _DEBUG
 #define VERSION_FILE_STR		"1.0.9 DEV"
 #else
-#define VERSION_FILE_STR		"1.0.8"
+#define VERSION_FILE_STR		"1.0.9"
 #endif
 #endif // !COPYRIGHTS

@@ -128,7 +128,7 @@ CStandNumberPlugin::CStandNumberPlugin()
 			NULL, TAG_ITEM_FUNCTION_NO,
 			NULL, TAG_ITEM_FUNCTION_NO);
 	}
-	m_GateStatusList.ShowFpList(false);
+	m_GateStatusList.ShowFpList(true);
 }
 
 CStandNumberPlugin::~CStandNumberPlugin()
@@ -240,7 +240,7 @@ bool CStandNumberPlugin::OnCompileCommand(const char* sCommandLine)
 	string commandString(sCommandLine);
 	cmatch matches;
 
-	if (startsWith(".stnver", sCommandLine))
+	if (strcmp(sCommandLine, ".stn ver") == 0)
 	{
 		string ver = VERSION_FILE_STR;
 		string versioninfo{ "Version: " + ver + " loaded" };
@@ -249,20 +249,24 @@ bool CStandNumberPlugin::OnCompileCommand(const char* sCommandLine)
 		return NULL;
 	}
 
-	if (startsWith(".stnstat", sCommandLine))
+	if (strcmp(sCommandLine, ".stn stat") == 0)
 	{
 		DISPLAY_DEBUG(GetGateStatus().c_str());
 		return NULL;
 	}
 
-	if (startsWith(".stnshow", sCommandLine))
+	if (strcmp(sCommandLine, ".stn show") == 0)
 	{
+		string message{ "Show gate status list" };
+		DISPLAY_INFO(message.c_str());
 		m_GateStatusList.ShowFpList(true);
 		return NULL;
 	}
 
-	if (startsWith(".stnhide", sCommandLine))
+	if (strcmp(sCommandLine, ".stn hide") == 0)
 	{
+		string message{ "Hide gate status list" };
+		DISPLAY_INFO(message.c_str());
 		m_GateStatusList.ShowFpList(false);
 		return NULL;
 	}
