@@ -9,12 +9,14 @@
 #include "curlcpp/curl_ios.h"
 #include "curlcpp/curl_exception.h"
 #include "rapidjson/istreamwrapper.h"
+#include <regex>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 #define STN_PLUGIN_NAME "STN Plugin"
+#define GA_AIRLINE_CODE "XXX"			// airline code used in the config for general aviation stands
 #define DISPLAY_WARNING(str) DisplayUserMessage(STN_PLUGIN_NAME, "Warning", str, true, true, true, true, false);
-#define DISPLAY_INFO(str) DisplayUserMessage(STN_PLUGIN_NAME, "Info", str, true, true, true, true, false);
+#define DISPLAY_INFO(str) DisplayUserMessage(STN_PLUGIN_NAME, "Info", str, true, true, true, false, false);
 #define DISPLAY_DEBUG(str) DisplayUserMessage(STN_PLUGIN_NAME, "Debug", str, true, true, true, true, false);
 
 vector<AirlineStands> AvailableStands;		// vector to store airline assigned stands loaded from json
@@ -504,6 +506,14 @@ string CStandNumberPlugin::GetClosestStand(CPosition ACPos_f)
 	return Closest.Number;
 }
 
+bool CStandNumberPlugin::IsAirlinerCallsign(string Callsign)
+{
+	// airliner callsigns are a 3 letter airline code followed by a flight number:
+	// at least one digit, then up to 3 more digits and/or letters
+	static const regex AirlinerCallsignPattern("^[A-Za-z]{3}[0-9][A-Za-z0-9]{0,3}$");
+	return regex_match(Callsign, AirlinerCallsignPattern);
+}
+
 bool CStandNumberPlugin::IsFromSchengen(string DepAirportICAO)
 {
 	for (auto& ICAO : SchengenCountries)
@@ -520,7 +530,7 @@ bool CStandNumberPlugin::IsFromSchengen(string DepAirportICAO)
 string CStandNumberPlugin::GetStand(bool IsFromSchengen, string Callsign, double WingSpan)
 {
 	string GateNum = " NO";
-	string AirlineCode = Callsign.substr(0, 3);
+	string AirlineCode = IsAirlinerCallsign(Callsign) ? Callsign.substr(0, 3) : GA_AIRLINE_CODE;
 	int MaxRetries = 10;
 	
 	for (auto& gates : AvailableStands)
