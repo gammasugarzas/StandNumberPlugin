@@ -1,9 +1,13 @@
 {
-  "stand_assignment_range": 25,
+  "stand_assignment_range": 100,
   "stand_deletion_altitude": 700,
   "stand_ooccupied_max_speed": 5,
   "aircraft_max_distance_to_gate": 55,
   "airlines": [
+    {
+      "airlinecode": "XXX",
+      "stands": [ "180", "181", "182", "183", "184", "190", "90L", "90R", "191", "91L", "91R", "192", "150", "151", "152", "153", "154", "155", "160", "161", "162", "170", "171", "172" ]
+    },
     {
       "airlinecode": "AEE",
       "stands": [ "042", "043", "044", "045" ]
@@ -217,6 +221,10 @@
       "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
     },
     {
+      "airlinecode": "MSC",
+      "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
+    },
+    {
       "airlinecode": "PGT",
       "stands": [ "O31", "O32", "O33", "034", "035", "036", "037", "038", "039" ]
     },
@@ -319,10 +327,6 @@
     {
       "airlinecode": "HUA",
       "stands": [ "278", "279" ]
-    },
-    {
-      "airlinecode": "XXX",
-      "stands": [ "180", "181", "182", "183", "184", "190", "90L", "90R", "191", "91L", "91R", "192"  ]
     }
   ],
   "gates": [
