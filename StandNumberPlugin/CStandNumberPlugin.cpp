@@ -9,12 +9,15 @@
 #include "curlcpp/curl_ios.h"
 #include "curlcpp/curl_exception.h"
 #include "rapidjson/istreamwrapper.h"
+#include <regex>
+#include <ctime>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 #define STN_PLUGIN_NAME "STN Plugin"
+#define GA_AIRLINE_CODE "XXX"			// airline code used in the config for general aviation stands
 #define DISPLAY_WARNING(str) DisplayUserMessage(STN_PLUGIN_NAME, "Warning", str, true, true, true, true, false);
-#define DISPLAY_INFO(str) DisplayUserMessage(STN_PLUGIN_NAME, "Info", str, true, true, true, true, false);
+#define DISPLAY_INFO(str) DisplayUserMessage(STN_PLUGIN_NAME, "Info", str, true, true, true, false, false);
 #define DISPLAY_DEBUG(str) DisplayUserMessage(STN_PLUGIN_NAME, "Debug", str, true, true, true, true, false);
 
 vector<AirlineStands> AvailableStands;		// vector to store airline assigned stands loaded from json
@@ -80,6 +83,8 @@ CStandNumberPlugin::CStandNumberPlugin()
 	char fullPluginPath[_MAX_PATH];
 	ConnectionStatus = 0;
 
+	srand(static_cast<unsigned int>(time(nullptr)));
+
 	string ver = VERSION_FILE_STR;
 	string versioninfo{ "Version: "+ver+" loaded" };
 
@@ -89,7 +94,7 @@ CStandNumberPlugin::CStandNumberPlugin()
 	std::string fullPluginPathStr(fullPluginPath);
 	pluginDirectory = fullPluginPathStr.substr(0, fullPluginPathStr.find_last_of("\\"));
 	LoadStandConfig();
-	LoadAircraftConfig("ICAO_Aircraft.json");
+	LoadAircraftConfig("../TopSky/ICAO_Aircraft.json");
 
 	RegisterTagItemType("Gate occupied", TAG_ITEM_GATE_OCCUPIED);
 	RegisterTagItemType("Gate planned",  TAG_ITEM_GATE_PLANNED);
@@ -280,15 +285,16 @@ void CStandNumberPlugin::OnFlightPlanDisconnect(CFlightPlan FP_f)
 	if (CallsignGateMap.find(Callsign) != CallsignGateMap.end())
 	{
 		map<string, int>::iterator CallsignGatePair = CallsignGateMap.find(Callsign);
-		GatesAndStands GateToEdit = LHBPGatesAndStands.at(CallsignGatePair->second);
-		if (GateToEdit.Occupied)
+		int GateIdx = CallsignGatePair->second;
+
+		if (LHBPGatesAndStands.at(GateIdx).Occupied)
 		{
-			GateToEdit.Occupied = false;
-			GateToEdit.Callsign = "";
+			LHBPGatesAndStands.at(GateIdx).Occupied = false;
+			LHBPGatesAndStands.at(GateIdx).Callsign = "";
 			CallsignGateMap.erase(Callsign);
 
 			m_GateStatusList.RemoveFpFromTheList(FP_f);
-			if (GateToEdit.Planned)
+			if (LHBPGatesAndStands.at(GateIdx).Planned)
 			{
 				m_GateStatusList.AddFpToTheList(FP_f);
 			}
@@ -358,81 +364,134 @@ void CStandNumberPlugin::LoadStandConfig(void) {
 		return;
 	}
 
-	assert(document.HasMember("stand_assignment_range"));
-	const Value& range = document["stand_assignment_range"]; // Using a reference for consecutive access is handy and faster.
-	assert(range.IsInt());
-	STN_AssignRange = range.GetInt();
-
-	assert(document.HasMember("stand_deletion_altitude"));
-	const Value& alt = document["stand_deletion_altitude"]; // Using a reference for consecutive access is handy and faster.
-	assert(alt.IsInt());
-	STN_DeleteAlt = alt.GetInt();
-
-	assert(document.HasMember("stand_ooccupied_max_speed"));
-	const Value& speed = document["stand_ooccupied_max_speed"]; // Using a reference for consecutive access is handy and faster.
-	assert(speed.IsInt());
-	STN_OccupiedMAxSpeed = speed.GetInt();
-
-	assert(document.HasMember("aircraft_max_distance_to_gate"));
-	const Value& maxdist = document["aircraft_max_distance_to_gate"]; // Using a reference for consecutive access is handy and faster.
-	assert(maxdist.IsInt());
-	STN_AcMaxDistanceToGate = maxdist.GetInt();
-
-	assert(document.HasMember("airlines"));
-	const Value& airlines = document["airlines"]; // Using a reference for consecutive access is handy and faster.
-	assert(airlines.IsArray());
-
-	for (const auto& airline : document.GetObject()["airlines"].GetArray())
+	if (document.HasMember("stand_assignment_range") && document["stand_assignment_range"].IsInt())
 	{
-		AirlineStands element;
-		assert(airline["airlinecode"].IsString());
-		element.AirlineCode = airline["airlinecode"].GetString();
+		STN_AssignRange = document["stand_assignment_range"].GetInt();
+	}
+	else
+	{
+		DISPLAY_WARNING("config JSON: missing or invalid 'stand_assignment_range', keeping default");
+	}
 
-		for (auto& stand : airline["stands"].GetArray())
+	if (document.HasMember("stand_deletion_altitude") && document["stand_deletion_altitude"].IsInt())
+	{
+		STN_DeleteAlt = document["stand_deletion_altitude"].GetInt();
+	}
+	else
+	{
+		DISPLAY_WARNING("config JSON: missing or invalid 'stand_deletion_altitude', keeping default");
+	}
+
+	if (document.HasMember("stand_ooccupied_max_speed") && document["stand_ooccupied_max_speed"].IsInt())
+	{
+		STN_OccupiedMAxSpeed = document["stand_ooccupied_max_speed"].GetInt();
+	}
+	else
+	{
+		DISPLAY_WARNING("config JSON: missing or invalid 'stand_ooccupied_max_speed', keeping default");
+	}
+
+	if (document.HasMember("aircraft_max_distance_to_gate") && document["aircraft_max_distance_to_gate"].IsInt())
+	{
+		STN_AcMaxDistanceToGate = document["aircraft_max_distance_to_gate"].GetInt();
+	}
+	else
+	{
+		DISPLAY_WARNING("config JSON: missing or invalid 'aircraft_max_distance_to_gate', keeping default");
+	}
+
+	if (document.HasMember("airlines") && document["airlines"].IsArray())
+	{
+		for (const auto& airline : document["airlines"].GetArray())
 		{
-			assert(stand.IsString());
-			element.PreferedStands.push_back(stand.GetString());
+			if (!airline.IsObject() ||
+				!airline.HasMember("airlinecode") || !airline["airlinecode"].IsString() ||
+				!airline.HasMember("stands") || !airline["stands"].IsArray())
+			{
+				DISPLAY_WARNING("config JSON: skipping malformed 'airlines' entry");
+				continue;
+			}
+
+			AirlineStands element;
+			element.AirlineCode = airline["airlinecode"].GetString();
+
+			bool standsValid = true;
+			for (auto& stand : airline["stands"].GetArray())
+			{
+				if (!stand.IsString())
+				{
+					standsValid = false;
+					break;
+				}
+				element.PreferedStands.push_back(stand.GetString());
+			}
+
+			if (!standsValid || element.PreferedStands.empty())
+			{
+				std::string message = "config JSON: skipping airline '" + element.AirlineCode + "' with invalid or empty 'stands'";
+				DISPLAY_WARNING(message.c_str());
+				continue;
+			}
+
+			AvailableStands.push_back(element);
 		}
-		AvailableStands.push_back(element);
+	}
+	else
+	{
+		DISPLAY_WARNING("config JSON: missing or invalid 'airlines' array, no airline stands loaded");
 	}
 
-	assert(document.HasMember("gates"));
-	const Value& gates = document["gates"]; // Using a reference for consecutive access is handy and faster.
-	assert(gates.IsArray());
-
-	for (const auto& gate : document.GetObject()["gates"].GetArray())
+	if (document.HasMember("gates") && document["gates"].IsArray())
 	{
-		GatesAndStands element;
+		for (const auto& gate : document["gates"].GetArray())
+		{
+			if (!gate.IsObject() ||
+				!gate.HasMember("number") || !gate["number"].IsString() ||
+				!gate.HasMember("loncoord") || !gate["loncoord"].IsString() ||
+				!gate.HasMember("latcoord") || !gate["latcoord"].IsString() ||
+				!gate.HasMember("wingspan") || !gate["wingspan"].IsNumber() ||
+				!gate.HasMember("schengen") || !gate["schengen"].IsBool())
+			{
+				DISPLAY_WARNING("config JSON: skipping malformed 'gates' entry");
+				continue;
+			}
 
-		assert(gate["number"].IsString());
-		assert(gate["loncoord"].IsString());
-		assert(gate["latcoord"].IsString());
-		assert(gate["wingspan"].IsNumber());
-		assert(gate["wingspan"].IsDouble());
-		assert(gate["schengen"].IsBool());
+			GatesAndStands element;
 
-		element.Number = gate["number"].GetString();
-		element.LongCoord = gate["loncoord"].GetString();
-		element.LAtCoord = gate["latcoord"].GetString();
-		element.Span = gate["wingspan"].GetDouble();
-		element.Occupied = false;
-		element.Planned = false;
-		element.PlannedCallsign = "";
-		element.Schengen = gate["schengen"].GetBool();
-		element.Callsign = "";
+			element.Number = gate["number"].GetString();
+			element.LongCoord = gate["loncoord"].GetString();
+			element.LAtCoord = gate["latcoord"].GetString();
+			element.Span = gate["wingspan"].GetDouble();
+			element.Occupied = false;
+			element.Planned = false;
+			element.PlannedCallsign = "";
+			element.Schengen = gate["schengen"].GetBool();
+			element.Callsign = "";
 
-		LHBPGatesAndStands.push_back(element);
+			LHBPGatesAndStands.push_back(element);
+		}
+	}
+	else
+	{
+		DISPLAY_WARNING("config JSON: missing or invalid 'gates' array, no gates loaded");
 	}
 
-	assert(document.HasMember("schengencountries"));
-	const Value& countries = document["schengencountries"]; // Using a reference for consecutive access is handy and faster.
-	assert(countries.IsArray());
-
-	for (const auto& countryicao : document.GetObject()["schengencountries"].GetArray())
+	if (document.HasMember("schengencountries") && document["schengencountries"].IsArray())
 	{
-		assert(countryicao.IsString());
+		for (const auto& countryicao : document["schengencountries"].GetArray())
+		{
+			if (!countryicao.IsString())
+			{
+				DISPLAY_WARNING("config JSON: skipping malformed 'schengencountries' entry");
+				continue;
+			}
 
-		SchengenCountries.push_back(countryicao.GetString());
+			SchengenCountries.push_back(countryicao.GetString());
+		}
+	}
+	else
+	{
+		DISPLAY_WARNING("config JSON: missing or invalid 'schengencountries' array, no countries loaded");
 	}
 }
 
@@ -459,17 +518,27 @@ void CStandNumberPlugin::LoadAircraftConfig(const std::string& filename) {
 
 	for (const auto& aircraft : document.GetArray())
 	{
-		Aircraft ac;
-
-		if (aircraft.HasMember("Wingspan"))
+		if (!aircraft.HasMember("ICAO") || !aircraft["ICAO"].IsString() ||
+			!aircraft.HasMember("Wingspan") || !aircraft["Wingspan"].IsString())
 		{
-			assert(aircraft["ICAO"].IsString());
-			ac.ICAO = aircraft["ICAO"].GetString();
-			assert(aircraft["Wingspan"].IsString());
-			ac.Wingspan = stod(aircraft["Wingspan"].GetString());
-
-			Aircrafts.push_back(ac);
+			continue;
 		}
+
+		Aircraft ac;
+		ac.ICAO = aircraft["ICAO"].GetString();
+
+		try
+		{
+			ac.Wingspan = stod(aircraft["Wingspan"].GetString());
+		}
+		catch (const std::exception&)
+		{
+			std::string message = filename + ": skipping aircraft '" + ac.ICAO + "' with invalid 'Wingspan'";
+			DISPLAY_WARNING(message.c_str());
+			continue;
+		}
+
+		Aircrafts.push_back(ac);
 	}
 }
 
@@ -504,6 +573,14 @@ string CStandNumberPlugin::GetClosestStand(CPosition ACPos_f)
 	return Closest.Number;
 }
 
+bool CStandNumberPlugin::IsAirlinerCallsign(string Callsign)
+{
+	// airliner callsigns are a 3 letter airline code followed by a flight number:
+	// at least one digit, then up to 3 more digits and/or letters
+	static const regex AirlinerCallsignPattern("^[A-Za-z]{3}[0-9][A-Za-z0-9]{0,3}$");
+	return regex_match(Callsign, AirlinerCallsignPattern);
+}
+
 bool CStandNumberPlugin::IsFromSchengen(string DepAirportICAO)
 {
 	for (auto& ICAO : SchengenCountries)
@@ -519,34 +596,39 @@ bool CStandNumberPlugin::IsFromSchengen(string DepAirportICAO)
 
 string CStandNumberPlugin::GetStand(bool IsFromSchengen, string Callsign, double WingSpan)
 {
-	string GateNum = " NO";
-	string AirlineCode = Callsign.substr(0, 3);
-	int MaxRetries = 10;
-	
+	bool IsAirliner = IsAirlinerCallsign(Callsign);
+	string AirlineCode = IsAirliner ? Callsign.substr(0, 3) : GA_AIRLINE_CODE;
+
 	for (auto& gates : AvailableStands)
 	{
 		if (strcmp(gates.AirlineCode.c_str(), AirlineCode.c_str()) == 0)
 		{
-			while (MaxRetries)
+			vector<string> EligibleStands;
+
+			for (auto& StandNumber : gates.PreferedStands)
 			{
-				int idx = rand() % gates.PreferedStands.size();
-				GateNum = gates.PreferedStands.at(idx);
 				for (auto& gate : LHBPGatesAndStands)
 				{
-					if (strcmp(gate.Number.c_str(), GateNum.c_str()) == 0)
+					if (strcmp(gate.Number.c_str(), StandNumber.c_str()) == 0)
 					{
-						if (!gate.Planned && !gate.Occupied && (WingSpan <= gate.Span))
+						if (!gate.Planned && !gate.Occupied &&
+							(WingSpan <= gate.Span) &&
+							(!IsAirliner || gate.Schengen == IsFromSchengen))
 						{
-							return GateNum;
+							EligibleStands.push_back(StandNumber);
 						}
+						break;
 					}
 				}
-				string GateNum = " NO";
-				MaxRetries--;
+			}
+
+			if (!EligibleStands.empty())
+			{
+				return EligibleStands.at(rand() % EligibleStands.size());
 			}
 		}
 	}
-	
+
 	return " NO";
 }
 
@@ -723,7 +805,7 @@ void CStandNumberPlugin::ReserveOccupiedGate(string Callsign_f, CRadarTarget RT_
 	{
 		LHBPGatesAndStands.at(GateIdx).Occupied = true;;
 		LHBPGatesAndStands.at(GateIdx).Callsign = Callsign_f;
-		CallsignGateMap.insert(pair<string, int>(Callsign_f, GateIdx));
+		CallsignGateMap[Callsign_f] = GateIdx;
 		FP_f.GetControllerAssignedData().SetScratchPadString(LHBPGatesAndStands.at(GateIdx).Number.c_str());
 
 		m_GateStatusList.RemoveFpFromTheList(FP_f);
@@ -748,7 +830,6 @@ void CStandNumberPlugin::ReserveOccupiedGate(string Callsign_f, CRadarTarget RT_
 void CStandNumberPlugin::PlanGate(string Callsign_f, string GateName_f, CFlightPlan FP_f)
 {
 	bool Success = false;
-	GatesAndStands GateToEdit;
 	int GateIdx = 0;
 
 	Success = GetGateByNumber(GateName_f, GateIdx);
@@ -756,7 +837,7 @@ void CStandNumberPlugin::PlanGate(string Callsign_f, string GateName_f, CFlightP
 	{
 		LHBPGatesAndStands.at(GateIdx).Planned = true;
 		LHBPGatesAndStands.at(GateIdx).PlannedCallsign = Callsign_f;
-		CallsignGateMap.insert(pair<string, int>(Callsign_f, GateIdx));
+		CallsignGateMap[Callsign_f] = GateIdx;
 
 		m_GateStatusList.RemoveFpFromTheList(FP_f);
 		m_GateStatusList.AddFpToTheList(FP_f);

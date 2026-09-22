@@ -59,6 +59,7 @@ private:
 	string GetClosestStand(CPosition ACPos_f);
 	bool CheckStandOccupation(CPosition ACPos_f);
 	bool IsFromSchengen(string DepAirportICAO);
+	bool IsAirlinerCallsign(string Callsign);
 	string GetStand(bool IsSchengen, string Callsign, double WingSpan);
 	
 	bool IsRelevantFLightplan(CFlightPlan FP_f);
