@@ -94,7 +94,7 @@ CStandNumberPlugin::CStandNumberPlugin()
 	std::string fullPluginPathStr(fullPluginPath);
 	pluginDirectory = fullPluginPathStr.substr(0, fullPluginPathStr.find_last_of("\\"));
 	LoadStandConfig();
-	LoadAircraftConfig("ICAO_Aircraft.json");
+	LoadAircraftConfig("../TopSky/ICAO_Aircraft.json");
 
 	RegisterTagItemType("Gate occupied", TAG_ITEM_GATE_OCCUPIED);
 	RegisterTagItemType("Gate planned",  TAG_ITEM_GATE_PLANNED);
